@@ -1,0 +1,491 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "bbd5187dda90488335fbd5350d7f3b84",
+    "entities": [
+      {
+        "tableName": "collector_sessions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`session_id` TEXT NOT NULL, `collector_version` TEXT NOT NULL, `protocol_version` TEXT NOT NULL, `observation_schema_version` TEXT NOT NULL, `app_version_name` TEXT NOT NULL, `app_version_code` INTEGER NOT NULL, `device_alias` TEXT NOT NULL, `manufacturer` TEXT NOT NULL, `model` TEXT NOT NULL, `device_codename` TEXT NOT NULL, `android_release` TEXT NOT NULL, `api_level` INTEGER NOT NULL, `started_utc_iso` TEXT NOT NULL, `started_elapsed_us` INTEGER NOT NULL, `requested_scan_interval_ms` INTEGER NOT NULL, `run_label` TEXT, PRIMARY KEY(`session_id`))",
+        "fields": [
+          {
+            "fieldPath": "sessionId",
+            "columnName": "session_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collectorVersion",
+            "columnName": "collector_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "protocolVersion",
+            "columnName": "protocol_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observationSchemaVersion",
+            "columnName": "observation_schema_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appVersionName",
+            "columnName": "app_version_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appVersionCode",
+            "columnName": "app_version_code",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceAlias",
+            "columnName": "device_alias",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "manufacturer",
+            "columnName": "manufacturer",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "model",
+            "columnName": "model",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceCodename",
+            "columnName": "device_codename",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "androidRelease",
+            "columnName": "android_release",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "apiLevel",
+            "columnName": "api_level",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startedUtcIso",
+            "columnName": "started_utc_iso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startedElapsedUs",
+            "columnName": "started_elapsed_us",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestedScanIntervalMs",
+            "columnName": "requested_scan_interval_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "runLabel",
+            "columnName": "run_label",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "session_id"
+          ]
+        }
+      },
+      {
+        "tableName": "scan_requests",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`session_id` TEXT NOT NULL, `request_id` TEXT NOT NULL, `request_utc_iso` TEXT NOT NULL, `request_elapsed_us` INTEGER NOT NULL, `requested_interval_ms` INTEGER NOT NULL, `start_scan_returned` INTEGER, `broadcast_received` INTEGER NOT NULL, `results_updated` INTEGER, `result_count` INTEGER NOT NULL, `completion_reason` TEXT NOT NULL, `completed_utc_iso` TEXT, `completed_elapsed_us` INTEGER, `failure_detail` TEXT, PRIMARY KEY(`session_id`, `request_id`), FOREIGN KEY(`session_id`) REFERENCES `collector_sessions`(`session_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "sessionId",
+            "columnName": "session_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestId",
+            "columnName": "request_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestUtcIso",
+            "columnName": "request_utc_iso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestElapsedUs",
+            "columnName": "request_elapsed_us",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestedIntervalMs",
+            "columnName": "requested_interval_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startScanReturned",
+            "columnName": "start_scan_returned",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "broadcastReceived",
+            "columnName": "broadcast_received",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultsUpdated",
+            "columnName": "results_updated",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "resultCount",
+            "columnName": "result_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completionReason",
+            "columnName": "completion_reason",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedUtcIso",
+            "columnName": "completed_utc_iso",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "completedElapsedUs",
+            "columnName": "completed_elapsed_us",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "failureDetail",
+            "columnName": "failure_detail",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "session_id",
+            "request_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_scan_requests_session_id",
+            "unique": false,
+            "columnNames": [
+              "session_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scan_requests_session_id` ON `${TABLE_NAME}` (`session_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "collector_sessions",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "session_id"
+            ],
+            "referencedColumns": [
+              "session_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "wifi_observations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`observation_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `request_id` TEXT NOT NULL, `observed_utc_iso` TEXT NOT NULL, `observed_elapsed_us` INTEGER NOT NULL, `ssid` TEXT, `bssid` TEXT, `rssi_dbm` INTEGER NOT NULL, `frequency_mhz` INTEGER NOT NULL, `channel_number` INTEGER, `channel_width` INTEGER, `capabilities` TEXT NOT NULL, `scan_timestamp_us` INTEGER, `scan_age_ms` INTEGER, `timestamp_state` TEXT NOT NULL, `seen_after_request` INTEGER, PRIMARY KEY(`session_id`, `observation_id`), FOREIGN KEY(`session_id`, `request_id`) REFERENCES `scan_requests`(`session_id`, `request_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "observationId",
+            "columnName": "observation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sessionId",
+            "columnName": "session_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestId",
+            "columnName": "request_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observedUtcIso",
+            "columnName": "observed_utc_iso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observedElapsedUs",
+            "columnName": "observed_elapsed_us",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ssid",
+            "columnName": "ssid",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "bssid",
+            "columnName": "bssid",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rssiDbm",
+            "columnName": "rssi_dbm",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frequencyMhz",
+            "columnName": "frequency_mhz",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "channelNumber",
+            "columnName": "channel_number",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "channelWidth",
+            "columnName": "channel_width",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "capabilities",
+            "columnName": "capabilities",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scanTimestampUs",
+            "columnName": "scan_timestamp_us",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "scanAgeMs",
+            "columnName": "scan_age_ms",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "timestampState",
+            "columnName": "timestamp_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seenAfterRequest",
+            "columnName": "seen_after_request",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "session_id",
+            "observation_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_wifi_observations_session_id_request_id",
+            "unique": false,
+            "columnNames": [
+              "session_id",
+              "request_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_wifi_observations_session_id_request_id` ON `${TABLE_NAME}` (`session_id`, `request_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "scan_requests",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "session_id",
+              "request_id"
+            ],
+            "referencedColumns": [
+              "session_id",
+              "request_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "collector_events",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`event_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `event_utc_iso` TEXT NOT NULL, `event_elapsed_us` INTEGER NOT NULL, `event_type` TEXT NOT NULL, `request_id` TEXT, `detail` TEXT, PRIMARY KEY(`session_id`, `event_id`), FOREIGN KEY(`session_id`) REFERENCES `collector_sessions`(`session_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sessionId",
+            "columnName": "session_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventUtcIso",
+            "columnName": "event_utc_iso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventElapsedUs",
+            "columnName": "event_elapsed_us",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventType",
+            "columnName": "event_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestId",
+            "columnName": "request_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "detail",
+            "columnName": "detail",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "session_id",
+            "event_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_collector_events_session_id",
+            "unique": false,
+            "columnNames": [
+              "session_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collector_events_session_id` ON `${TABLE_NAME}` (`session_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "collector_sessions",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "session_id"
+            ],
+            "referencedColumns": [
+              "session_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "session_completions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`session_id` TEXT NOT NULL, `ended_utc_iso` TEXT NOT NULL, `stop_reason` TEXT NOT NULL, `completed_request_count` INTEGER NOT NULL, `clean_close` INTEGER NOT NULL, PRIMARY KEY(`session_id`), FOREIGN KEY(`session_id`) REFERENCES `collector_sessions`(`session_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "sessionId",
+            "columnName": "session_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endedUtcIso",
+            "columnName": "ended_utc_iso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stopReason",
+            "columnName": "stop_reason",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedRequestCount",
+            "columnName": "completed_request_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cleanClose",
+            "columnName": "clean_close",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "session_id"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "collector_sessions",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "session_id"
+            ],
+            "referencedColumns": [
+              "session_id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bbd5187dda90488335fbd5350d7f3b84')"
+    ]
+  }
+}

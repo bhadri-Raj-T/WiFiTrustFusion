@@ -268,7 +268,9 @@ class ResearchSessionLogger(
     @Synchronized
     fun markSessionComplete(
         stopReason: String,
-        completedRequestCount: Int
+        completedRequestCount: Int,
+        endedUtcIso: String = Instant.now().toString(),
+        cleanClose: Boolean = stopReason == "USER_STOP"
     ) {
 
         val directory =
@@ -288,6 +290,15 @@ class ResearchSessionLogger(
                 directory,
                 "session_completion.csv"
             )
+
+        // Never overwrite existing completion evidence.
+        check(!completionFile.exists()) {
+            "Completion record already exists."
+        }
+
+        // A caller cannot label a failure or unknown stop as clean.
+        val verifiedCleanClose =
+            cleanClose && stopReason == "USER_STOP"
 
         openWriter(
             completionFile
@@ -309,10 +320,10 @@ class ResearchSessionLogger(
                 writer,
                 listOf(
                     sessionId,
-                    Instant.now().toString(),
+                    endedUtcIso,
                     stopReason,
                     completedRequestCount,
-                    true
+                    verifiedCleanClose
                 )
             )
         }

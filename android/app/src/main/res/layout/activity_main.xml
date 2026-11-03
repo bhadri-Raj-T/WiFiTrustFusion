@@ -1,122 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0D121F" android:orientation="vertical">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingLeft="18dp" android:paddingRight="18dp" android:paddingTop="12dp" android:paddingBottom="10dp" android:background="#172031">
+<ImageView android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="WiFiTrustFusion signal logo" android:src="@drawable/wtf_brand_mark" />
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp">
+<TextView android:id="@+id/textTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="WiFiTrustFusion" android:textStyle="bold" android:textColor="#FFFFFF" android:textSize="20sp" />
+<TextView android:id="@+id/textSubtitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Project tools and session history" android:textColor="#C9B8E8" android:textSize="12sp" />
+</LinearLayout>
+</LinearLayout>
+<ScrollView android:id="@+id/uiContentScroll" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true" android:clipToPadding="false">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingLeft="18dp" android:paddingRight="18dp" android:paddingTop="22dp" android:paddingBottom="28dp">
 
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
-
-        <TextView
-            android:id="@+id/textTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="WiFiTrustFusion"
-            android:textSize="28sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textSubtitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Experimental Wi-Fi Evidence Collector"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/textStage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="G1 COLLECTOR FREEZE&#10;&#10;COLLECTOR_V1 / PROTOCOL_V1 / OBS_SCHEMA_V1 frozen for D1 pilot."
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/buttonRequestPermission"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Grant Wi-Fi Scan Permission" />
-
-        <Button
-            android:id="@+id/buttonLocationSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Open Location Settings" />
-
-        <Button
-            android:id="@+id/buttonRefresh"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Refresh Diagnostics" />
-
-        <Button
-            android:id="@+id/buttonRunSingleScan"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Run Manual Single Scan" />
-
-        <Button
-            android:id="@+id/buttonStartSession"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Start Development Session" />
-
-        <Button
-            android:id="@+id/buttonStopSession"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Stop Session" />
-
-        <TextView
-            android:id="@+id/textDiagnostics"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:fontFamily="monospace"
-            android:textIsSelectable="true"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/textSession"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:fontFamily="monospace"
-            android:text="SESSION IDLE"
-            android:textIsSelectable="true"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textScanStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Collector status: idle"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textScanResults"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:fontFamily="monospace"
-            android:text="No scan has been requested."
-            android:textIsSelectable="true"
-            android:textSize="14sp" />
-
-    </LinearLayout>
-
-</ScrollView>
-
+<LinearLayout android:id="@+id/pageOverview" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Overview" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold" /><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Understand the observation before opening the full research record." android:textColor="#B8B4C8" android:textSize="13sp" />
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textUiSource" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="NO ASSESSMENT" android:textSize="12sp" android:textColor="#C7F7F1" android:textStyle="bold"  /><TextView android:id="@+id/textUiSession" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"  android:text="Session not running" android:textSize="15sp" android:textColor="#FFFFFF" android:textStyle="bold"  /><TextView android:id="@+id/textUiExplanation" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"  android:text="Start a session or view a synthetic example." android:textSize="13sp" android:textColor="#BCB9CC"   /></LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="12dp">
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:padding="14dp" android:background="@drawable/wtf_card">
+<TextView android:id="@+id/textUiObservations" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="--" android:textSize="28sp" android:textColor="#FFFFFF" android:textStyle="bold"  /><TextView android:id="@+id/textObservationsCaption" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp"  android:text="Observations" android:textSize="12sp" android:textColor="#B8B4C8"   />
+</LinearLayout>
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="10dp" android:orientation="vertical" android:padding="14dp" android:background="@drawable/wtf_card">
+<TextView android:id="@+id/textUiQuality" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="Not assessed" android:textSize="19sp" android:textColor="#CAB6FF" android:textStyle="bold"  /><TextView android:id="@+id/textQualityCaption" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"  android:text="Evidence quality" android:textSize="12sp" android:textColor="#B8B4C8"   />
+</LinearLayout></LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textLiveChangesHeading" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="SESSION-LOCAL IDENTITY" android:textSize="11sp" android:textColor="#BCB9CC" android:textStyle="bold"  /><TextView android:id="@+id/textUiChanges" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"  android:text="Not assessed" android:textSize="17sp" android:textColor="#FFFFFF"   /><TextView android:id="@+id/textStorageHeading" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp"  android:text="EVIDENCE STORAGE" android:textSize="11sp" android:textColor="#BCB9CC" android:textStyle="bold"  /><TextView android:id="@+id/textUiStorage" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"  android:text="CSV authoritative | Room not verified" android:textSize="13sp" android:textColor="#D7CEE8"   /></LinearLayout>
+<Button android:id="@+id/buttonOverviewGoScan" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="18dp" android:text="Open scanning controls" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#190E32" android:background="@drawable/wtf_button_primary" android:backgroundTint="@null" />
+<Button android:id="@+id/buttonOverviewGoHistory" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="8dp" android:text="View saved sessions" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" />
+<Button android:id="@+id/buttonReviewGuidedSample" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="8dp" android:text="Try guided synthetic demo (no scan)" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" />
+<Button android:id="@+id/buttonReviewRefresh" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="8dp" android:text="Refresh overview" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" />
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textReviewGuide" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="Synthetic examples are not stored as research evidence." android:textSize="12sp" android:textColor="#B8B4C8"   /></LinearLayout>
+</LinearLayout>
+<LinearLayout android:id="@+id/pageScan" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+<!-- Consumer-facing UI extension; existing research collector controls follow unchanged. -->
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="@drawable/wtf_card" android:padding="16dp" android:layout_marginBottom="14dp">
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DISCOVER &amp; ASSESS" android:textSize="12sp" android:textStyle="bold" android:textColor="#C9B8E8" />
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Find nearby networks, inspect security before connection, verify connectivity after joining, and contribute private community reports." android:textColor="#D8D3E7" android:textSize="13sp" />
+<Button android:id="@+id/buttonOpenWifiExplorer" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="12dp" android:text="Open Wi-Fi Explorer" android:textAllCaps="false" android:textColor="#190E32" android:background="@drawable/wtf_button_primary" android:backgroundTint="@null" />
+</LinearLayout>
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Wi-Fi Scan" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold" /><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Collection and permissions. Live measurements are separate from examples." android:textColor="#B8B4C8" android:textSize="13sp" />
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textScanStatus" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="Collector status: idle" android:textSize="14sp" android:textColor="#E6DCF9" android:textStyle="bold"  /><TextView android:id="@+id/textSession" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"  android:text="SESSION IDLE" android:textSize="13sp" android:textColor="#D1CBE0"  android:fontFamily="monospace" android:textIsSelectable="true" /></LinearLayout>
+<Button android:id="@+id/buttonStartSession" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="16dp" android:text="Start development session" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#190E32" android:background="@drawable/wtf_button_primary" android:backgroundTint="@null" />
+<Button android:id="@+id/buttonStopSession" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="10dp" android:text="Stop session" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" />
+<Button android:id="@+id/buttonRunSingleScan" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="10dp" android:text="Run single scan" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" />
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textPermissionHeading" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="PERMISSIONS &amp; DIAGNOSTICS" android:textSize="12sp" android:textColor="#C9B8E8" android:textStyle="bold"  /><Button android:id="@+id/buttonRequestPermission" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="10dp" android:text="Grant Wi-Fi scan permission" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" /><Button android:id="@+id/buttonLocationSettings" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="10dp" android:text="Open location settings" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" /><Button android:id="@+id/buttonRefresh" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="10dp" android:text="Refresh diagnostics" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" /><TextView android:id="@+id/textDiagnostics" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"  android:text="Permission checks are shown here." android:textSize="12sp" android:textColor="#D1CBE0"  android:fontFamily="monospace" android:textIsSelectable="true" /></LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textScanResultsHeading" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="LATEST REQUEST" android:textSize="12sp" android:textColor="#C9B8E8" android:textStyle="bold"  /><TextView android:id="@+id/textScanResults" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"  android:text="No scan has been requested." android:textSize="12sp" android:textColor="#D1CBE0"  android:fontFamily="monospace" android:textIsSelectable="true" /></LinearLayout>
+</LinearLayout>
+<LinearLayout android:id="@+id/pageHistory" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Session History" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold" /><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Locally mirrored aggregate records. No SSIDs or BSSIDs are shown." android:textColor="#B8B4C8" android:textSize="13sp" />
+<Button android:id="@+id/buttonLoadSessionHistory" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="18dp" android:text="Load saved sessions" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#190E32" android:background="@drawable/wtf_button_primary" android:backgroundTint="@null" />
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textSessionHistoryHeader" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="ROOM MIRROR - LAST 10 SESSIONS" android:textSize="12sp" android:textColor="#C9B8E8" android:textStyle="bold"  /><TextView android:id="@+id/textSessionHistory" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"  android:text="Tap Load to display recent sessions. CSV remains authoritative." android:textSize="13sp" android:textColor="#E9E7F5"  android:fontFamily="monospace" android:textIsSelectable="true" /></LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textHistoryNote" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="CSV files remain the authoritative research evidence; Room is a development mirror and may be incomplete." android:textSize="13sp" android:textColor="#B8B4C8"   /></LinearLayout>
+</LinearLayout>
+<LinearLayout android:id="@+id/pageDetails" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Research Details" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold" /><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Technical logs and limitations for the project review." android:textColor="#B8B4C8" android:textSize="13sp" />
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textAssessmentHeader" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="NETWORK IDENTITY &amp; EVIDENCE QUALITY" android:textSize="12sp" android:textColor="#C9B8E8" android:textStyle="bold"  /><TextView android:id="@+id/textAssessmentMode" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="9dp"  android:text="Waiting for live observations" android:textSize="13sp" android:textColor="#FFFFFF" android:textStyle="bold"  /><Button android:id="@+id/buttonDemoAssessment" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="10dp" android:text="Display synthetic assessment (no scan)" android:textAllCaps="false" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8E2FA" android:background="@drawable/wtf_button_secondary" android:backgroundTint="@null" /><TextView android:id="@+id/textAssessmentQuality" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"  android:text="Evidence quality: not assessed" android:textSize="13sp" android:textColor="#D8D3E7"  android:fontFamily="monospace" android:textIsSelectable="true" /><TextView android:id="@+id/textAssessmentIdentity" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp"  android:text="Network identity: no baseline" android:textSize="13sp" android:textColor="#D8D3E7"  android:fontFamily="monospace" android:textIsSelectable="true" /></LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textReviewHeading" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="FULL REVIEW REPORT" android:textSize="12sp" android:textColor="#C9B8E8" android:textStyle="bold"  /><TextView android:id="@+id/textReviewDashboard" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"  android:text="Review summary: no assessment" android:textSize="12sp" android:textColor="#D8D3E7"  android:fontFamily="monospace" android:textIsSelectable="true" /></LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="vertical" android:padding="16dp" android:background="@drawable/wtf_card"><TextView android:id="@+id/textStage" android:layout_width="match_parent" android:layout_height="wrap_content"  android:text="G1 COLLECTOR FREEZE: COLLECTOR_V1 / PROTOCOL_V1 / OBS_SCHEMA_V1" android:textSize="12sp" android:textColor="#D1CBE0" android:textStyle="bold"  /><TextView android:id="@+id/textAssessmentDisclaimer" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"  android:text="Research prototype: no validated attack detection, WFAI or risk score." android:textSize="12sp" android:textColor="#BAB5CD"   /></LinearLayout>
+</LinearLayout>
+</LinearLayout></ScrollView>
+<LinearLayout android:layout_width="match_parent" android:layout_height="68dp" android:orientation="horizontal" android:paddingLeft="10dp" android:paddingRight="10dp" android:paddingTop="7dp" android:paddingBottom="7dp" android:background="#172031">
+<TextView android:id="@+id/tabOverview" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:background="@drawable/wtf_tab_unselected" android:clickable="true" android:focusable="true" android:contentDescription="Open Overview page" android:text="Overview" android:textColor="#EFE7FF" android:textSize="12sp" android:textStyle="bold" />
+<TextView android:id="@+id/tabScan" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:background="@drawable/wtf_tab_unselected" android:clickable="true" android:focusable="true" android:contentDescription="Open Scan page" android:text="Scan" android:textColor="#EFE7FF" android:textSize="12sp" android:textStyle="bold" />
+<TextView android:id="@+id/tabHistory" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:background="@drawable/wtf_tab_unselected" android:clickable="true" android:focusable="true" android:contentDescription="Open History page" android:text="History" android:textColor="#EFE7FF" android:textSize="12sp" android:textStyle="bold" />
+<TextView android:id="@+id/tabDetails" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:background="@drawable/wtf_tab_unselected" android:clickable="true" android:focusable="true" android:contentDescription="Open Details page" android:text="Details" android:textColor="#EFE7FF" android:textSize="12sp" android:textStyle="bold" />
+</LinearLayout></LinearLayout>

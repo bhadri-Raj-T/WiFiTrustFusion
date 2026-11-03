@@ -1,4 +1,4 @@
-﻿# Android / Gradle
+# Android / Gradle
 .gradle/
 **/build/
 local.properties
@@ -39,3 +39,55 @@ Desktop.ini
 
 # Logs
 *.log
+
+# Third review: local exports and private material
+# Android build output and local IDE/tool state
+**/build/
+**/.gradle/
+**/.kotlin/
+**/.idea/
+**/local.properties
+*.iml
+.DS_Store
+Thumbs.db
+
+# Local exports and diagnostics; APKs belong in GitHub release assets
+/Final_APK/
+/screenshots/
+*.apk
+*.aab
+*.apks
+*.log
+*.hprof
+
+# Credentials and signing material
+.env
+.env.*
+*.jks
+*.keystore
+*.pem
+*.p12
+*.pfx
+keystore.properties
+signing.properties
+google-services.json
+
+# Private evidence, datasets, drafts and backups
+/private_data/
+/evidence/
+/data/
+/papers/
+/paper/
+/manuscripts/
+/MConnect_Backups/
+*.csv
+*.db
+*.db-shm
+*.db-wal
+*.sqlite*
+*.bak
+*.tmp
+*.zip
+
+# Keep the Gradle wrapper JAR tracked
+!android/gradle/wrapper/gradle-wrapper.jar

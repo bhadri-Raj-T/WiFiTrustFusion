@@ -2,7 +2,7 @@ package com.bhadrirajt.wifitrustfusion.core
 
 object ProjectVersions {
 
-    const val MILESTONE = "G1_COLLECTOR_FREEZE"
+    const val MILESTONE = "M3_3B_ROOM_MIRROR_DEV"
 
     /*
      * These are development identifiers only.
