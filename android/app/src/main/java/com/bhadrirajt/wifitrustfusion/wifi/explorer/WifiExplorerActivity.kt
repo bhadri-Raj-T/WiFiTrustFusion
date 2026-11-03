@@ -2,11 +2,14 @@ package com.bhadrirajt.wifitrustfusion.wifi.explorer
 
 import android.Manifest
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
@@ -27,6 +30,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ImageView
 import android.widget.ScrollView
+import android.widget.ProgressBar
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -54,7 +58,8 @@ class WifiExplorerActivity : AppCompatActivity() {
         val name: TextView, val status: TextView, val signal: TextView,
         val internet: TextView, val security: TextView, val securitySource: TextView,
         val link: TextView, val chart: SignalChartView, val statistics: TextView,
-        val advice: TextView, val tests: TextView, val run: Button
+        val advice: TextView, val tests: TextView, val run: Button,
+        val reportRows: LinearLayout, val reportSummary: TextView, val progress: ProgressBar, val cancel: Button
     )
     private val bg = Color.rgb(13, 18, 31)
     private val panel = Color.rgb(23, 32, 49)
@@ -77,13 +82,17 @@ class WifiExplorerActivity : AppCompatActivity() {
     private val history = ConnectionAnalytics.SignalWindow()
     private var current = WifiConnectionMonitor.Snapshot()
     private var page = 0
+    private var demoLab: FailureLabPanel? = null
+    private val reportRenderer = CheckReportRenderer(this)
+    private var reportAnchor: View? = null
+    private var diagnosticPhase: WifiDiagnostics.Phase? = null
     private var demo = false
     private var selected: AccessPoint? = null
     private var cachedNetworks: List<AccessPoint> = emptyList()
     private var lastDiagnostics: WifiDiagnostics.Result? = null
     private var lastRunMs: Long? = null
     private var busy = false
-    private var runId = 0
+    @Volatile private var runId = 0
     private var foreground = false
     private var awaitingSsid: String? = null
     private var analyseOnReturn = false
@@ -104,7 +113,7 @@ class WifiExplorerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         monitor = WifiConnectionMonitor(applicationContext)
-        demo = savedInstanceState?.getBoolean("sample_preview") ?: false
+        demo = false
         awaitingSsid = savedInstanceState?.getString("awaiting_ssid")
         analyseOnReturn = savedInstanceState?.getBoolean("analyse_on_return") ?: false
         connectionNotice = savedInstanceState?.getString("connection_notice").orEmpty()
@@ -117,7 +126,9 @@ class WifiExplorerActivity : AppCompatActivity() {
         }
         if (!demo) selected = null
         buildShell()
-        showPage(savedInstanceState?.getInt("page", 0) ?: 0)
+        val restoredPage = savedInstanceState?.getInt("page", 0) ?: 0
+        val navigationVersion = savedInstanceState?.getInt("navigation_version", 1) ?: 2
+        showPage(if (navigationVersion == 1 && restoredPage == 2) 3 else restoredPage)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 when {
@@ -146,16 +157,19 @@ class WifiExplorerActivity : AppCompatActivity() {
             }
         }
         if (page == 0 && selected == null) showPage(0)
+        demoLab?.resume()
         handler.removeCallbacks(poll)
         handler.postDelayed(poll, 2000)
     }
     override fun onPause() {
         foreground = false
+        demoLab?.pause()
         handler.removeCallbacks(poll)
         super.onPause()
     }
     override fun onStop() { monitor.stop(); super.onStop() }
     override fun onDestroy() {
+        demoLab?.close()
         runId++
         pendingDiagnostic?.cancel(true)
         workers.shutdownNow()
@@ -164,6 +178,7 @@ class WifiExplorerActivity : AppCompatActivity() {
     }
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putInt("page", page)
+        outState.putInt("navigation_version", 2)
         outState.putBoolean("sample_preview", demo)
         outState.putString("awaiting_ssid", awaitingSsid)
         outState.putBoolean("analyse_on_return", analyseOnReturn)
@@ -263,10 +278,6 @@ class WifiExplorerActivity : AppCompatActivity() {
         header.addView(title, LinearLayout.LayoutParams(0, -2, 1f).apply {
             leftMargin = dp(10); rightMargin = dp(8)
         })
-        header.addView(button("Safety") {
-            startActivity(Intent(this, SafetyDemoActivity::class.java))
-        }.apply { contentDescription = "Open live Wi-Fi pause demo and simulated security examples" },
-            LinearLayout.LayoutParams(dp(56), dp(48)).apply { rightMargin = dp(6) })
         header.addView(button("Tools") {
             startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
         }.apply { contentDescription = "Open project tools and session history" },
@@ -285,22 +296,24 @@ class WifiExplorerActivity : AppCompatActivity() {
 
     private fun showPage(index: Int) {
         val previousY = if (page == index) scroll.scrollY else 0
-        page = index.coerceIn(0, 2)
+        demoLab?.close(); demoLab = null; reportAnchor = null
+        page = index.coerceIn(0, 3)
         analysisViews = null; connectionName = null; connectionState = null; selectedState = null
         body.removeAllViews()
         val nav = navigation.apply { removeAllViews() }
-        listOf("My Wi-Fi", "Analysis", "Reports").forEachIndexed { i, text ->
+        listOf("My Wi-Fi", "Analysis", "Demo", "Reports").forEachIndexed { i, text ->
             nav.addView(button(text, page == i) {
                 if (i == 0) selected = null
                 showPage(i)
             }.apply {
                 isSelected = page == i
                 contentDescription = "$text tab"
-            }, LinearLayout.LayoutParams(0, dp(48), 1f).apply { if (i > 0) leftMargin = dp(7) })
+            }, LinearLayout.LayoutParams(0, dp(48), 1f).apply { if (i > 0) leftMargin = dp(4) })
         }
         when (page) {
             0 -> selected?.let { renderSelectedNetwork(it) } ?: renderNetworkList()
             1 -> if (demo) renderSampleAnalysis() else renderAnalysis()
+            2 -> renderFailureLab()
             else -> renderCommunity()
         }
         scroll.post { scroll.scrollTo(0, previousY) }
@@ -309,6 +322,7 @@ class WifiExplorerActivity : AppCompatActivity() {
     private fun refreshConnection() {
         val next = monitor.snapshot()
         if (!current.sameConnection(next)) {
+            if (busy) { runId++; pendingDiagnostic?.cancel(true); busy = false; diagnosticPhase = null }
             lastDiagnostics = null
             checkNotice = if (current.connected) "Connection changed. Run checks for the current Wi-Fi." else ""
         }
@@ -358,14 +372,16 @@ class WifiExplorerActivity : AppCompatActivity() {
         views.advice.text = ConnectionAnalytics.recommendations(current.connected, current.ssid != null,
             current.rssiDbm, summary, current.captivePortal, current.validated, current.security,
             checks?.dnsOk, checks?.httpsOk).joinToString("\n\n") { "${it.title}\n${it.detail}" }
-        views.tests.text = checks?.let { result ->
-            val median = result.medianConnectMs?.let { String.format(Locale.US, "%.1f ms", it) } ?: "Unavailable"
-            "${result.summary}\n${DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(result.completedAtMs))}\n\n" +
-                "DNS: ${result.dnsStatus}\nHTTPS: ${result.httpsStatus}\n" +
-                "Median TCP connect time: $median\n" +
-                "TCP probes: ${result.tcpTimesMs.size}/${result.tcpAttempts} completed\n\n${result.explanation}"
-        } ?: if (busy) "Checking DNS, TCP reachability and HTTPS over this Wi-Fi..." else
-            checkNotice.ifBlank { "Not tested yet. Tap Check internet connection to test this Wi-Fi." }
+        views.tests.text = if (busy) "LIVE · Step ${when (diagnosticPhase) { WifiDiagnostics.Phase.TCP -> 2; WifiDiagnostics.Phase.HTTPS -> 3; else -> 1 }}/3: ${diagnosticPhase?.name ?: "DNS"}. Results are published after connection checks complete."
+            else checks?.let { "LIVE · ${it.summary} · ${DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(it.completedAtMs))}\n${it.explanation}" }
+                ?: checkNotice.ifBlank { "Not tested yet. Tap Check internet connection to test this Wi-Fi." }
+        val report = currentCheckReport()
+        views.reportSummary.text = report.summary
+        reportRenderer.render(views.reportRows, report)
+        views.progress.visibility = if (busy) View.VISIBLE else View.GONE
+        views.progress.progress = when (diagnosticPhase) { WifiDiagnostics.Phase.TCP -> 2; WifiDiagnostics.Phase.HTTPS -> 3; WifiDiagnostics.Phase.DNS -> 1; else -> 0 }
+        views.cancel.isEnabled = busy
+        views.cancel.alpha = if (busy) 1f else 0.5f
         val retrySeconds = lastRunMs?.let {
             ((30_000L - (SystemClock.elapsedRealtime() - it)).coerceAtLeast(0L) + 999L) / 1000L
         } ?: 0L
@@ -499,8 +515,8 @@ class WifiExplorerActivity : AppCompatActivity() {
         } }
         if (!demo) {
             add(body, button("Refresh networks from phone") { refreshConnection(); showPage(0) }, 14)
-            add(body, button("Preview with labelled sample data") {
-                demo = true; selected = null; awaitingSsid = null; history.clear(); showPage(0)
+            add(body, button("Open failure-demo tab") {
+                demo = false; selected = null; awaitingSsid = null; showPage(2)
             }, 10)
         }
         updateLiveViews()
@@ -545,27 +561,73 @@ class WifiExplorerActivity : AppCompatActivity() {
         }
     }
 
+    private fun currentCheckReport(): ConnectionCheckReport {
+        val summary = ConnectionAnalytics.summarise(history.samples())
+        val data = lastDiagnostics?.takeIf { it.connectionKey == current.routeKey }?.let {
+            ConnectionCheckReports.Diagnostics(it.dnsOk, it.httpsOk, it.tcpTimesMs.size, it.tcpAttempts,
+                it.medianConnectMs, it.dnsStatus, it.httpsStatus, it.httpStatusCode, it.connectionUnchanged)
+        }
+        return ConnectionCheckReports.live(ConnectionCheckReports.Inputs(current.connected, current.ssid != null,
+            current.rssiDbm, summary.count, summary.durationSeconds, summary.rangeDb, current.security,
+            current.securitySource, current.captivePortal, current.validated, data, if (busy) diagnosticPhase?.name else null))
+    }
+
+    private fun scrollToReport() {
+        reportAnchor?.let { target ->
+            val bounds = Rect(); target.getDrawingRect(bounds)
+            scroll.offsetDescendantRectToMyCoords(target, bounds)
+            scroll.smoothScrollTo(0, (bounds.top - dp(12)).coerceAtLeast(0))
+        }
+    }
+
+    private fun renderFailureLab() {
+        demo = false
+        val lab = FailureLabPanel(this) {
+            startActivity(Intent(this, SafetyDemoActivity::class.java))
+        }
+        demoLab = lab
+        add(body, lab.view)
+        if (foreground) lab.resume()
+    }
+
     private fun renderAnalysis() {
         heading("How is your Wi-Fi?")
-        add(body, line("Your connected network, signal history and internet checks in one place.", 13f, muted), 6)
+        add(body, line("LIVE · Connect, run checks, inspect results. Use Demo for invented failure cases.", 13f, muted), 6)
         lateinit var name: TextView; lateinit var status: TextView
         lateinit var signal: TextView; lateinit var internet: TextView
         lateinit var security: TextView; lateinit var securitySource: TextView; lateinit var link: TextView
         lateinit var chart: SignalChartView; lateinit var stats: TextView
         lateinit var advice: TextView; lateinit var tests: TextView; lateinit var run: Button
+        lateinit var reportRows: LinearLayout; lateinit var reportSummary: TextView
+        lateinit var progress: ProgressBar; lateinit var cancel: Button
         card(body, 17) {
-            add(this, line("CONNECTED NETWORK", 10f, teal, true))
+            add(this, line("CONNECTED WI-FI · LIVE", 10f, teal, true))
             name = line("", 22f, white, true); add(this, name, 9)
             status = line("", 12f, muted); add(this, status, 7)
             internet = line("", 14f, teal, true); add(this, internet, 12)
             add(this, button("Choose or change Wi-Fi") { openSystemWifi() }, 13)
             if (current.ssid == null || current.rssiDbm == null) {
-                add(this, line("To show Wi-Fi names and signal details, allow Location access and enable the phone's Location setting. You can still check internet access on the connected Wi-Fi.", 12f, muted), 10)
+                add(this, line("Location access/settings may be needed for network details. Checks can still use an available Wi-Fi route.", 12f, muted), 10)
                 if (!permissionAvailable()) add(this, button("Allow Wi-Fi visibility") { requestVisibility() }, 9)
-                add(this, button("Open phone Location settings") {
-                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                }, 9)
+                add(this, button("Open phone Location settings") { startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }, 9)
             }
+        }
+        card(body) {
+            add(this, line("RUN CHECKS ON THIS CONNECTION", 10f, violet, true))
+            add(this, line("DNS, up to three TCP connects and HTTPS HEAD contact example.com through this Wi-Fi. The checklist also explains passive observations.", 12f, muted), 9)
+            run = button("Check internet connection", true) { launchDiagnostic() }; add(this, run, 12)
+            cancel = button("Cancel current check") {
+                if (busy) {
+                    runId++; pendingDiagnostic?.cancel(true); busy = false; diagnosticPhase = null; lastDiagnostics = null
+                    checkNotice = "Cancelled. Incomplete active checks are not marked as passed. The retry cooldown still applies."
+                    updateLiveViews()
+                }
+            }; add(this, cancel, 8)
+            progress = ProgressBar(this@WifiExplorerActivity, null, android.R.attr.progressBarStyleHorizontal).apply { max = 3 }
+            add(this, progress, 8)
+            tests = line("", 12f, muted); add(this, tests, 10)
+            reportSummary = line("", 13f, teal, true); add(this, reportSummary, 10)
+            add(this, button("View formatted checklist") { scrollToReport() }, 9)
         }
         card(body) {
             add(this, line("SIGNAL HISTORY", 10f, violet, true))
@@ -585,14 +647,22 @@ class WifiExplorerActivity : AppCompatActivity() {
             advice = line("", 13f, white); add(this, advice, 11)
         }
         card(body) {
-            add(this, line("CONNECTION CHECKS", 10f, violet, true))
-            add(this, line("Tap below to check internet access on this Wi-Fi. Small test requests are sent to example.com.", 12f, muted), 10)
-            run = button("Check internet connection", true) { launchDiagnostic() }; add(this, run, 13)
-            tests = line("", 12f, muted); add(this, tests, 12)
+            val title = line("LIVE CHECKLIST · TAP A ROW FOR DETAILS", 11f, violet, true)
+            reportAnchor = title; add(this, title)
+            reportRows = vertical(); add(this, reportRows, 6)
+            add(this, line("12 items combine observations and 3 active-check types. They are not 12 independent probes or a vulnerability scan. Unknown is not a pass.", 12f, muted), 12)
+            add(this, button("Copy report without Wi-Fi identifiers") {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val captured = DateFormat.getDateTimeInstance().format(Date())
+                val checked = lastDiagnostics?.let { DateFormat.getDateTimeInstance().format(Date(it.completedAtMs)) } ?: "Not tested"
+                clipboard.setPrimaryClip(ClipData.newPlainText("LIVE Wi-Fi checklist", currentCheckReport().asText() + "\n\nCaptured: $captured\nLast active check: $checked"))
+                Toast.makeText(this@WifiExplorerActivity, "Copied LIVE report without network name or AP identifier", Toast.LENGTH_SHORT).show()
+            }, 12)
+            add(this, button("Open failure-demo tab") { showPage(2) }, 9)
         }
-        add(body, line("Connection quality and security configuration are separate observations. This app does not certify hotspot ownership or detect attacks.", 12f, muted), 16)
+        add(body, line("Quality, configuration and operator identity are separate questions. The app does not certify hotspot ownership or detect every attack.", 12f, muted), 16)
         analysisViews = AnalysisViews(name, status, signal, internet, security, securitySource,
-            link, chart, stats, advice, tests, run)
+            link, chart, stats, advice, tests, run, reportRows, reportSummary, progress, cancel)
         updateLiveViews()
     }
 
@@ -604,17 +674,19 @@ class WifiExplorerActivity : AppCompatActivity() {
         if (last != null && SystemClock.elapsedRealtime() - last < 30_000) {
             Toast.makeText(this, "Wait 30 seconds between checks.", Toast.LENGTH_SHORT).show(); return
         }
-        busy = true; lastRunMs = SystemClock.elapsedRealtime(); lastDiagnostics = null; checkNotice = ""
+        busy = true; diagnosticPhase = WifiDiagnostics.Phase.DNS; lastRunMs = SystemClock.elapsedRealtime(); lastDiagnostics = null; checkNotice = ""
         val id = ++runId
         updateLiveViews()
         pendingDiagnostic = workers.submit {
-            val result = try { WifiDiagnostics.run(target, monitor) } catch (e: Exception) {
+            val result = try { WifiDiagnostics.run(target, monitor, cancelled = { id != runId || Thread.currentThread().isInterrupted }) { phase ->
+                handler.post { if (id == runId && busy && !isDestroyed) { diagnosticPhase = phase; updateLiveViews() } }
+            } } catch (e: Exception) {
                 WifiDiagnostics.Result(target.routeKey.orEmpty(), System.currentTimeMillis(), "Checks could not complete",
-                    emptyList(), 0, null, null, "Not tested", "Not tested", e.javaClass.simpleName)
+                    emptyList(), 0, null, null, "Not tested", "Not tested", e.javaClass.simpleName, connectionUnchanged = false)
             }
             handler.post {
                 if (id != runId || isFinishing || isDestroyed) return@post
-                busy = false
+                busy = false; diagnosticPhase = null
                 refreshConnection()
                 if (!demo && result.connectionKey == current.routeKey) lastDiagnostics = result
                 else checkNotice = "Wi-Fi changed. Run checks again for the current connection."
@@ -623,7 +695,7 @@ class WifiExplorerActivity : AppCompatActivity() {
         }
         handler.postDelayed({
             if (busy && id == runId) {
-                runId++; busy = false; pendingDiagnostic?.cancel(true)
+                runId++; busy = false; diagnosticPhase = null; pendingDiagnostic?.cancel(true)
                 checkNotice = "Checks took too long. Review the connection and retry."
                 updateLiveViews()
             }
@@ -682,7 +754,7 @@ class WifiExplorerActivity : AppCompatActivity() {
             add(this, button("Save report privately", true) {
                 CrowdReports.add(this@WifiExplorerActivity, spin.selectedItem.toString(), note.text.toString())
                 Toast.makeText(this@WifiExplorerActivity, "Saved locally. Not published.", Toast.LENGTH_SHORT).show()
-                showPage(2)
+                showPage(3)
             }, 11)
         }
         val drafts = CrowdReports.read(this)
@@ -700,7 +772,7 @@ class WifiExplorerActivity : AppCompatActivity() {
                     .setTitle("Delete local reports?")
                     .setMessage("This removes all optional local community drafts from this device.")
                     .setNegativeButton("Cancel", null)
-                    .setPositiveButton("Delete") { _, _ -> CrowdReports.deleteAll(this@WifiExplorerActivity); showPage(2) }
+                    .setPositiveButton("Delete") { _, _ -> CrowdReports.deleteAll(this@WifiExplorerActivity); showPage(3) }
                     .show()
             }, 14)
         }

@@ -10,6 +10,7 @@ import javax.net.ssl.HttpsURLConnection
 /** User-triggered checks bound to one identified Wi-Fi Network, never the default route. */
 internal object WifiDiagnostics {
     private const val HOST = "example.com"
+    enum class Phase { DNS, TCP, HTTPS }
 
     data class Result(
         val connectionKey: String,
@@ -21,7 +22,9 @@ internal object WifiDiagnostics {
         val httpsOk: Boolean?,
         val dnsStatus: String,
         val httpsStatus: String,
-        val explanation: String
+        val explanation: String,
+        val httpStatusCode: Int? = null,
+        val connectionUnchanged: Boolean = true
     ) {
         val medianConnectMs: Double? get() {
             val values = tcpTimesMs.sorted()
@@ -33,20 +36,23 @@ internal object WifiDiagnostics {
         val tcpFailures: Int get() = tcpAttempts - tcpTimesMs.size
     }
 
-    fun run(target: WifiConnectionMonitor.Snapshot, monitor: WifiConnectionMonitor): Result {
+    fun run(target: WifiConnectionMonitor.Snapshot, monitor: WifiConnectionMonitor,
+        cancelled: () -> Boolean = { Thread.currentThread().isInterrupted }, progress: (Phase) -> Unit = {}): Result {
         val key = target.routeKey.orEmpty()
         fun stillSame(): Boolean {
+            if (cancelled()) return false
             val now = monitor.snapshot()
             return target.sameConnection(now)
         }
         fun blocked(reason: String) = Result(key, System.currentTimeMillis(),
             "Checks were not completed", emptyList(), 0, null, null,
-            "Not tested", "Not tested", reason)
+            "Not tested", "Not tested", reason, connectionUnchanged = false)
         if (!stillSame()) return blocked("The selected Wi-Fi connection could not be confirmed. No probes sent.")
         val network = target.network ?: return blocked("Wi-Fi is disconnected. No probes sent.")
         val resolver = Executors.newSingleThreadExecutor { job ->
             Thread(job, "wifi-dns-check").apply { isDaemon = true }
         }
+        progress(Phase.DNS)
         val dnsTask = resolver.submit<java.net.InetAddress> { network.getByName(HOST) }
         val address = try { dnsTask.get(3, TimeUnit.SECONDS) }
             catch (_: Exception) { null }
@@ -54,6 +60,7 @@ internal object WifiDiagnostics {
         if (!stillSame()) return blocked("Wi-Fi changed during the checks. Results were discarded; run again for the current connection.")
         val times = mutableListOf<Long>()
         var attempts = 0
+        if (address != null) progress(Phase.TCP)
         if (address != null) repeat(3) {
             if (!stillSame()) return blocked("Wi-Fi changed during the checks. Results were discarded.")
             attempts++
@@ -67,6 +74,8 @@ internal object WifiDiagnostics {
         }
         if (!stillSame()) return blocked("Wi-Fi changed during the checks. Results were discarded.")
         var httpsOk: Boolean? = null
+        var httpCode: Int? = null
+        if (address != null) progress(Phase.HTTPS)
         val https = if (address == null) "Skipped: hostname lookup did not complete" else try {
             val connection = network.openConnection(URL("https://$HOST/")) as HttpsURLConnection
             connection.connectTimeout = 2500
@@ -75,6 +84,7 @@ internal object WifiDiagnostics {
             try {
                 connection.requestMethod = "HEAD"
                 val code = connection.responseCode
+                httpCode = code
                 httpsOk = true
                 "TLS/hostname verified; HTTP $code"
             } finally { connection.disconnect() }
@@ -87,6 +97,6 @@ internal object WifiDiagnostics {
             times.toList(), attempts, address != null, httpsOk,
             if (address != null) "Resolved $HOST over this Wi-Fi" else "Lookup failed or exceeded 3 seconds",
             https,
-            "The test contacted $HOST over this Wi-Fi only. TCP connect time includes connection establishment; it is not download speed or ICMP ping. HTTPS verifies the test endpoint, not the hotspot operator.")
+            "The test contacted $HOST over this Wi-Fi only. TCP connect time includes connection establishment; it is not download speed or ICMP ping. HTTPS verifies the test endpoint, not the hotspot operator.", httpStatusCode = httpCode)
     }
 }

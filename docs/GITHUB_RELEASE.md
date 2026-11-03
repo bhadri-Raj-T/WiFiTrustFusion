@@ -4,59 +4,59 @@ Repository: **https://github.com/bhadri-Raj-T/WiFiTrustFusion**. This workflow u
 
 ## 1. Prepare the main review worktree and build
 
-Save `WiFiTrustFusion_Main_Review_Update.zip` in Downloads. In **Command Prompt**:
+Save `WiFiTrustFusion_Final_UI_Update.zip` in Downloads. In **Command Prompt**:
 
 ```bat
-powershell -NoProfile -Command "Expand-Archive -LiteralPath (Join-Path $env:USERPROFILE 'Downloads\WiFiTrustFusion_Main_Review_Update.zip') -DestinationPath 'D:\Important\Forensics Analytics' -Force"
+powershell -NoProfile -Command "Expand-Archive -LiteralPath (Join-Path $env:USERPROFILE 'Downloads\WiFiTrustFusion_Final_UI_Update.zip') -DestinationPath 'D:\Important\Forensics Analytics' -Force"
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "D:\Important\Forensics Analytics\WiFiTrustFusion_Main_Review_Update\Prepare-MainReview.ps1" -ProjectRoot "D:\Important\Forensics Analytics\WiFiTrustFusion" -Build
+powershell -NoProfile -ExecutionPolicy Bypass -File "D:\Important\Forensics Analytics\WiFiTrustFusion_Final_UI_Update\Prepare-FinalReview.ps1" -ProjectRoot "D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview" -Build
 ```
 
-The preparation helper checks the existing repository's origin, fetches `main`, creates a separate detached worktree and applies the update there. The original working tree, including uncommitted M-stage work and local data, is not reset or overwritten. Its branch selection is not changed. The new review source combines the inspected remote `main` with the latest shared working Android source and the new Safety demo. Unseen local changes cannot be included automatically.
+The preparation helper checks the existing repository's origin, fetches `main`, creates a separate detached worktree and applies the update there. The original working tree, including uncommitted M-stage work and local data, is not reset or overwritten. Its branch selection is not changed. The new review source combines the inspected remote `main` with the published 1.1-demo source plus the final interface, twenty-case Demo tab and source-separated live responses. Unseen local changes cannot be included automatically.
 
 The default worktree is:
 
-`D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview`
+`D:\Important\Forensics Analytics\WiFiTrustFusion_FinalReview`
 
-The patch was prepared against main commit `44bdabc8deb2afc5fc3364a174d7a07d33ab99d1`. If remote files have changed incompatibly, application stops rather than overwriting them. Share the first error to adapt the patch. If the review folder already exists, keep it and resume there; do not delete a worktree containing local edits.
+The patch was prepared against main commit `986c741a12baadd50eb1c8a237cd2b05bbda097b`. If remote files have changed incompatibly, application stops rather than overwriting them. Share the first error to adapt the patch. If the review folder already exists, keep it and resume there; do not delete a worktree containing local edits.
 
-`-Build` invokes `Build-ReviewApk.ps1` locally. The script runs clean debug assembly and JVM unit tests, verifies XML results and exports only after success. It keeps local SDK settings ignored and uses the laptop's normal debug-signing configuration. No build, tests or app execution were performed during preparation of this update.
+`-Build` invokes `Build-ReviewApk.ps1` locally. The script runs clean debug assembly and JVM unit tests, verifies XML results and exports only after success. It keeps local SDK settings ignored and uses the laptop's normal debug-signing configuration. The supplied log confirms the preceding 1.1-demo passed 46 tests and installed. No build, tests or app execution were performed for this new 1.2-demo update during preparation.
 
 The final export is:
 
-`D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview\Final_APK\WiFiTrustFusion_Final.apk`
+`D:\Important\Forensics Analytics\WiFiTrustFusion_FinalReview\Final_APK\WiFiTrustFusion_Final.apk`
 
-This is version **1.1-demo**, code **3**, minimum Android **8.1/API 27**. It is a classroom debug-signed APK, not a production-signed Android release build. Do not use an older APK from another export folder for this version.
+This is version **1.2-demo**, code **4**, minimum Android **8.1/API 27**. It is a classroom debug-signed APK, not a production-signed Android release build. Do not use an older APK from another export folder for this version.
 
 If a build fails, fix that error and rerun the build in the review worktree:
 
 ```bat
-powershell -NoProfile -ExecutionPolicy Bypass -File "D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview\Build-ReviewApk.ps1" -OriginalProjectRoot "D:\Important\Forensics Analytics\WiFiTrustFusion"
+powershell -NoProfile -ExecutionPolicy Bypass -File "D:\Important\Forensics Analytics\WiFiTrustFusion_FinalReview\Build-ReviewApk.ps1" -OriginalProjectRoot "D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview"
 ```
 
 ## 2. Install and verify the phone
 
 ```bat
 "D:\Android\platform-tools\adb.exe" devices -l
-"D:\Android\platform-tools\adb.exe" -s 5203cb41fa4d534d install -r "D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview\Final_APK\WiFiTrustFusion_Final.apk"
+"D:\Android\platform-tools\adb.exe" -s 5203cb41fa4d534d install -r "D:\Important\Forensics Analytics\WiFiTrustFusion_FinalReview\Final_APK\WiFiTrustFusion_Final.apk"
 "D:\Android\platform-tools\adb.exe" -s 5203cb41fa4d534d shell am start -n com.bhadrirajt.wifitrustfusion/.wifi.explorer.WifiExplorerActivity
 ```
 
-Use the current device serial if it differs. Confirm the existing connection/analytics still work, open **Safety**, play an example and rehearse the actual foreground pause on your own phone. See [DEMO_GUIDE.md](DEMO_GUIDE.md). Updating an installed copy requires the same signing certificate; do not uninstall an evidence-bearing copy simply to bypass a signing error.
+Use the current device serial if it differs. Confirm the existing connection/analytics still work, open **Demo**, play a case and rehearse the separate actual foreground response on your own phone. See [DEMO_GUIDE.md](DEMO_GUIDE.md). Updating an installed copy requires the same signing certificate; do not uninstall an evidence-bearing copy simply to bypass a signing error.
 
 ## 3. Commit and push to the existing main
 
 After the build and manual phone check succeed:
 
 ```bat
-powershell -NoProfile -ExecutionPolicy Bypass -File "D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview\Publish-Main.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "D:\Important\Forensics Analytics\WiFiTrustFusion_FinalReview\Publish-Main.ps1"
 ```
 
-This checks the actual APK checksum and source fingerprint, stages the explicit public file list, makes a review commit, pushes **`HEAD:refs/heads/main`** and pushes the annotated **`v1.1-demo`** tag. It never force-pushes or updates `dev-core` or `data-acquisition`. Git uses your existing local authentication; complete Git's sign-in if prompted. If Git needs a commit identity, configure your own name and verified/no-reply email.
+This checks the actual APK checksum and source fingerprint, stages the explicit public file list, makes a review commit, pushes **`HEAD:refs/heads/main`** and pushes the annotated **`v1.2-demo`** tag. It never force-pushes or updates `dev-core` or `data-acquisition`. Git uses your existing local authentication; complete Git's sign-in if prompted. If Git needs a commit identity, configure your own name and verified/no-reply email.
 
 The review worktree is detached so it can coexist with any branch checked out in the original project. The explicit push still updates remote main. Your original local `main` may then be behind the remote; update it later with a normal fast-forward pull when that working tree is clean. No local branch is forcibly reset.
 
-If main has advanced incompatibly, or branch protection denies a direct push, the script stops and leaves all local files intact. Do not use `--force`; use the repository's required review/merge process. If an existing `v1.1-demo` tag points to different code, it is not moved.
+If main has advanced incompatibly, or branch protection denies a direct push, the script stops and leaves all local files intact. Do not use `--force`; use the repository's required review/merge process. If an existing `v1.2-demo` tag points to different code, it is not moved.
 
 ## 4. Create the release using GitHub's website
 
@@ -64,22 +64,22 @@ Git pushes commits and tags; creating the release page and uploading its binary 
 
 ```bat
 start "" "https://github.com/bhadri-Raj-T/WiFiTrustFusion/releases/new"
-explorer "D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview\Final_APK"
+explorer "D:\Important\Forensics Analytics\WiFiTrustFusion_FinalReview\Final_APK"
 ```
 
 In the **existing repository**:
 
-1. Choose the already pushed tag **`v1.1-demo`**.
-2. Set the title to **WiFiTrustFusion 1.1-demo — Third Review**.
-3. Copy the description from `docs/RELEASE_NOTES_v1.1-demo.md` in the review worktree.
+1. Choose the already pushed tag **`v1.2-demo`**.
+2. Set the title to **WiFiTrustFusion 1.2-demo — Third Review**.
+3. Copy the description from `docs/RELEASE_NOTES_v1.2-demo.md` in the review worktree.
 4. Attach `WiFiTrustFusion_Final.apk`, `WiFiTrustFusion_Final.sha256`, `BUILD_SUMMARY.md`, `RELEASE_BUILD.json` and `SOURCE_MANIFEST.txt` from `Final_APK`.
 5. Mark this classroom demo as a **prerelease**, then select **Publish release**.
 
 Your release URL will be:
 
-**https://github.com/bhadri-Raj-T/WiFiTrustFusion/releases/tag/v1.1-demo**
+**https://github.com/bhadri-Raj-T/WiFiTrustFusion/releases/tag/v1.2-demo**
 
-The same repository and collaborator access are retained. No new repository is created. No collaborator invitation is sent by the scripts.
+Keep the already created v1.1-demo release and tag intact; publish the new source/APK under v1.2-demo. The same repository and collaborator access are retained. No new repository is created. No collaborator invitation is sent by the scripts.
 
 ## Review evidence and privacy
 

@@ -19,7 +19,7 @@
         android:theme="@style/Theme.WiFiTrustFusion">
         <activity android:name=".wifi.explorer.SafetyDemoActivity"
             android:exported="false"
-            android:label="Safety demo" />
+            android:label="Live Wi-Fi response" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

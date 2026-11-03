@@ -19,6 +19,7 @@ import android.provider.Settings
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.LinearLayout
@@ -35,8 +36,6 @@ import java.util.Date
 
 /** Local teaching examples; real pause is explicit, one-shot and foreground-only. */
 class SafetyDemoActivity : AppCompatActivity() {
-    private data class Scenario(val name: String, val observation: String, val meaning: String,
-        val action: String, val values: List<Int>)
     private val bg = Color.rgb(13, 18, 31)
     private val panel = Color.rgb(23, 32, 49)
     private val soft = Color.rgb(33, 45, 65)
@@ -46,6 +45,9 @@ class SafetyDemoActivity : AppCompatActivity() {
     private val amber = Color.rgb(250, 194, 100)
     private val handler = Handler(Looper.getMainLooper())
     private val rule = LivePauseRule()
+    private val configRule = LiveSecurityPauseRule()
+    private lateinit var policyChoice: Spinner
+    private fun isArmed() = rule.isArmed || configRule.isArmed
     private val history = ConnectionAnalytics.SignalWindow()
     private lateinit var monitor: WifiConnectionMonitor
     private lateinit var wifi: WifiManager
@@ -54,59 +56,26 @@ class SafetyDemoActivity : AppCompatActivity() {
     private lateinit var actionStatus: TextView
     private lateinit var eventView: TextView
     private lateinit var liveChart: SignalChartView
-    private lateinit var trainingChart: SignalChartView
-    private lateinit var trainingResult: TextView
-    private lateinit var scenarioChoice: Spinner
     private lateinit var thresholdChoice: Spinner
     private lateinit var armButton: Button
     private var foreground = false
     private var ruleMessage = "Disarmed. Arming applies only while this screen stays in the foreground."
     private var pendingOffUntilMs: Long? = null
     private var expectedOff = false
-    private var simulation: Runnable? = null
     private var confirmation: AlertDialog? = null
     private val events = ArrayDeque<String>()
     private val thresholds = listOf(-40, -55, -65, -75, -85)
-    private val scenarios = listOf(
-        Scenario("Weak signal", "Example RSSI falls below -75 dBm.",
-            "Distance, walls and interference can weaken reception. This does not establish that a hacker is present.",
-            "Move closer or use a known connection. A live pause demonstration is available separately above.",
-            listOf(-48, -52, -57, -63, -70, -77, -80, -82)),
-        Scenario("Changing signal", "Example signal values vary by more than 12 dB.",
-            "Movement and the radio environment can explain variation. This curve cannot identify an attack.",
-            "Compare positions and observe a longer window before drawing a conclusion.",
-            listOf(-45, -47, -63, -49, -71, -52, -65, -46)),
-        Scenario("Open or legacy Wi-Fi", "Example network advertises Open Wi-Fi or WEP.",
-            "Link protection is absent or obsolete in this invented example. It is not a hacker verdict.",
-            "Prefer a known network with modern protection; consider pausing this phone's Wi-Fi.",
-            listOf(-48, -48, -47, -49, -48, -47, -49, -48)),
-        Scenario("Look-alike hotspot name", "Invented names: CampusGuest and CampusGuest_Free.",
-            "A similar name can mislead a user. These names are not scan results or detected attackers.",
-            "Confirm the exact network with its operator before entering credentials.",
-            listOf(-44, -45, -44, -46, -45, -44, -45, -43)),
-        Scenario("Same name, different access point", "Example SSID stays the same while its access-point identifier changes.",
-            "A different AP can be normal roaming or a replacement router. No authenticated owner baseline is available.",
-            "Verify with the operator; pause Wi-Fi if uncertain. This example does not detect an evil twin.",
-            listOf(-64, -65, -63, -44, -45, -43, -44, -42)),
-        Scenario("Captive sign-in page", "Example network requires a portal login.",
-            "A portal is not itself evidence of phishing. Live analysis uses Android's portal flag where available.",
-            "Use Android's sign-in screen and verify the operator and address before entering information.",
-            listOf(-51, -50, -51, -49, -50, -50, -51, -49)),
-        Scenario("DNS or HTTPS check incomplete", "Example DNS times out or HTTPS verification does not complete.",
-            "A portal, filtering, timeout or endpoint problem may cause this. It does not prove DNS poisoning or interception.",
-            "Retry on a known network. Do not bypass certificate warnings; inspect the real diagnostic result.",
-            listOf(-45, -44, -46, -45, -44, -45, -46, -45)),
-        Scenario("Unexpected connection loss", "Example Wi-Fi connection disappears.",
-            "Range or router restart may explain loss. This prototype cannot identify deauthentication frames or their sender.",
-            "Pause sensitive activity and reconnect to a known network. This demo sends no deauthentication traffic.",
-            listOf(-51, -56, -65, -76, -84, -90, -95, -98))
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         monitor = WifiConnectionMonitor(applicationContext)
         wifi = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         buildScreen()
+        policyChoice.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) { updatePolicyControls() }
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+        }
+        updatePolicyControls()
     }
     override fun onStart() { super.onStart(); monitor.start() }
     override fun onResume() {
@@ -118,7 +87,7 @@ class SafetyDemoActivity : AppCompatActivity() {
         handler.removeCallbacks(poll); handler.post(poll)
     }
     override fun onPause() {
-        foreground = false; handler.removeCallbacks(poll); stopSimulation()
+        foreground = false; handler.removeCallbacks(poll)
         disarm("Disarmed: Safety demo is no longer in the foreground.")
         confirmation?.dismiss(); confirmation = null
         super.onPause()
@@ -150,7 +119,9 @@ class SafetyDemoActivity : AppCompatActivity() {
                 actionStatus.text = "Wi-Fi shutdown was not confirmed. Use Android's Wi-Fi controls to inspect its state."
                 event("LIVE", "Shutdown request was not confirmed.")
             }
-            val decision = rule.observe(snapshot.key, snapshot.rssiDbm, now)
+            val decision = if (configRule.isArmed) configRule.observe(snapshot.key, snapshot.security,
+                snapshot.securityFromCurrentConnection, snapshot.securityAgeSeconds, now)
+                else rule.observe(snapshot.key, snapshot.rssiDbm, now)
             when (decision.kind) {
                 LivePauseRule.Kind.IDLE -> Unit
                 LivePauseRule.Kind.COUNTING -> ruleMessage = decision.message
@@ -206,12 +177,12 @@ class SafetyDemoActivity : AppCompatActivity() {
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
         }
         val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL; setPadding(dp(18), dp(8), dp(18), dp(8)) }
-        header.addView(label("Safety demo", 23f, white, true), LinearLayout.LayoutParams(0, -2, 1f))
+        header.addView(label("Live response", 23f, white, true), LinearLayout.LayoutParams(0, -2, 1f))
         header.addView(button("Back") { finish() }, LinearLayout.LayoutParams(dp(70), dp(48)))
         root.addView(header)
         val scroll = ScrollView(this); root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
         val body = column().apply { setPadding(dp(18), 0, dp(18), dp(28)) }; scroll.addView(body)
-        add(body, label("LIVE measurements and SIMULATED teaching examples stay separate. This prototype does not detect hackers or certify a hotspot.", 14f, muted), 4)
+        add(body, label("These controls use the phone's actual connection. Nothing is armed by default. They do not identify hackers or guarantee personal-data protection.", 14f, muted), 4)
         card(body, "LIVE CONNECTION - THIS PHONE") { box ->
             live = label("Reading the current Wi-Fi connection..."); add(box, live)
             liveChart = SignalChartView(this); add(box, liveChart, 12, dp(180))
@@ -221,13 +192,16 @@ class SafetyDemoActivity : AppCompatActivity() {
             })
             add(box, button("Open Wi-Fi controls") { disarm("Disarmed: opened Wi-Fi controls."); openWifiControls() })
         }
-        card(body, "LIVE SIGNAL-TRIGGERED PAUSE DEMO") { box ->
-            add(box, label("Optional: after 3 consecutive polls below the chosen RSSI, request Wi-Fi off on this phone. Weak signal is not an attack indicator. The one-shot rule disarms on leaving this screen or changing connection.", 14f, muted))
+        card(body, "ARM AN OPTIONAL LIVE RESPONSE") { box ->
+            add(box, label("Choose a condition, then explicitly arm it. After 3 matching foreground polls, request Wi-Fi off once. Open/WEP uses Android current security or a matching-AP advertisement no older than 30s. Cached observations may repeat. Unknown metadata does not trigger. Signal is a demo condition, not hacker evidence.", 14f, muted))
+            policyChoice = spinner(listOf("Open/WEP configuration", "Low signal (demonstration)")).apply { contentDescription = "Real Wi-Fi pause condition" }
+            add(box, policyChoice)
+            add(box, label("Signal threshold below applies only to the low-signal profile.", 12f, muted))
             thresholdChoice = spinner(thresholds.map { if (it == -40) "Below -40 dBm (quick demo)" else "Below $it dBm" }).apply {
                 setSelection(thresholds.indexOf(-75)); contentDescription = "Live signal pause threshold"
             }; add(box, thresholdChoice)
             ruleStatus = label(ruleMessage, 14f, muted); add(box, ruleStatus)
-            armButton = button("Arm live pause rule") { if (rule.isArmed) disarm("Disarmed by the user.") else confirmArm() }
+            armButton = button("Arm live pause rule") { if (isArmed()) disarm("Disarmed by the user.") else confirmArm() }
             add(box, armButton); add(box, button("Pause Wi-Fi on this phone now") { confirmManualPause() })
             actionStatus = label("No pause requested. This affects this phone only; mobile data, the router and other devices are outside this action.", 13f, muted)
             add(box, actionStatus)
@@ -235,12 +209,9 @@ class SafetyDemoActivity : AppCompatActivity() {
                 "This Android version permits a shutdown request. The app checks whether Wi-Fi actually turns off."
                 else "Android 10+ requires you to switch Wi-Fi off in system controls. Automatic shutdown is restricted by Android.", 13f, amber))
         }
-        card(body, "SIMULATED SECURITY SCENARIOS", amber) { box ->
-            add(box, label("Invented examples, including the chart. No attack or real disconnection is performed by this panel. Playing an example disarms the live rule.", 14f, muted))
-            scenarioChoice = spinner(scenarios.map { it.name }).apply { contentDescription = "Simulated Wi-Fi security scenario" }
-            add(box, scenarioChoice); add(box, button("Play simulated example") { runScenario(scenarios[scenarioChoice.selectedItemPosition]) })
-            trainingResult = label("SIMULATED: choose an example for its observation, limits and response.", 14f, amber)
-            add(box, trainingResult); trainingChart = SignalChartView(this); add(box, trainingChart, 12, dp(160))
+        card(body, "TEACHING CASES ARE IN THE DEMO TAB", amber) { box ->
+            add(box, label("The 20-case failure simulator cannot change the real phone's Wi-Fi. Leave this screen to return to the Demo tab; both live rules disarm automatically.", 13f, muted))
+            add(box, button("Back to the app") { finish() })
         }
         card(body, "SESSION EVENTS") { box ->
             eventView = label("No events yet.", 12f, muted); add(box, eventView)
@@ -250,20 +221,21 @@ class SafetyDemoActivity : AppCompatActivity() {
 
     private fun confirmArm() {
         val target = monitor.snapshot()
-        if (!target.connected || !ConnectionAnalytics.validRssi(target.rssiDbm)) {
-            ruleMessage = "Connect to Wi-Fi and wait for a valid live RSSI before arming."; showRuleState(); return
+        val configuration = policyChoice.selectedItemPosition == 0
+        if (!target.connected || (!configuration && !ConnectionAnalytics.validRssi(target.rssiDbm))) {
+            ruleMessage = "Connect to Wi-Fi first. Signal mode also needs a valid RSSI."; showRuleState(); return
         }
         val threshold = thresholds[thresholdChoice.selectedItemPosition]
-        confirmation = AlertDialog.Builder(this).setTitle("Arm a real Wi-Fi pause demo?")
-            .setMessage("Connection: ${target.ssid ?: "name unavailable"}\nBelow $threshold dBm for 3 polls.\n\nThis can interrupt this phone's Wi-Fi. Android 10+ requires you to finish in system controls. It does not detect an attacker, protect the router or disable mobile data.")
-            .setNegativeButton("Cancel", null).setPositiveButton("Arm live rule") { _, _ ->
+        val condition = if (configuration) "Current/recent Open or WEP configuration for 3 polls" else "Below $threshold dBm for 3 polls"
+        confirmation = AlertDialog.Builder(this).setTitle("Arm a real Wi-Fi pause response?")
+            .setMessage("Connection: ${target.ssid ?: "name unavailable"}\n$condition.\n\nThis can interrupt this phone's Wi-Fi. The configuration profile needs current Android security or a matching-AP advertisement <=30s old. Unknown evidence does not trigger. Android 10+ requires you to finish in system controls. Mobile data and the router are unaffected.")
+            .setNegativeButton("Cancel", null).setPositiveButton("Arm live response") { _, _ ->
                 val fresh = monitor.snapshot()
-                if (foreground && fresh.key == target.key && fresh.connected && ConnectionAnalytics.validRssi(fresh.rssiDbm)) {
-                    stopSimulation(); trainingResult.text = "SIMULATED: playback stopped while the live rule is armed."
-                    if (rule.arm(fresh.key, threshold, SystemClock.elapsedRealtime())) {
-                        ruleMessage = "Armed: waiting for 3 consecutive live polls below $threshold dBm."
-                        event("LIVE", "User armed the foreground pause demo at $threshold dBm.")
-                    }
+                if (foreground && fresh.key == target.key && fresh.connected) {
+                    val armed = if (configuration) configRule.arm(fresh.key, SystemClock.elapsedRealtime())
+                        else if (ConnectionAnalytics.validRssi(fresh.rssiDbm)) rule.arm(fresh.key, threshold, SystemClock.elapsedRealtime()) else false
+                    ruleMessage = if (armed) "Armed: $condition. Waiting for live observations." else "No valid live input; not armed."
+                    if (armed) event("LIVE", "User armed: $condition.")
                 } else ruleMessage = "Connection changed. Check the current connection and arm again."
                 showRuleState()
             }.show()
@@ -274,7 +246,7 @@ class SafetyDemoActivity : AppCompatActivity() {
         if (!target.connected) { actionStatus.text = "No connected Wi-Fi route. Use Open Wi-Fi controls to inspect the radio."; return }
         confirmation = AlertDialog.Builder(this).setTitle("Pause Wi-Fi on this phone?")
             .setMessage("This interrupts this phone's Wi-Fi. On Android 10+, finish the change in system Wi-Fi controls. Mobile data may continue carrying traffic. No router setting or personal file is changed.")
-            .setNegativeButton("Cancel", null).setPositiveButton("Continue") { _, _ -> stopSimulation(); requestPause(target.key) }.show()
+            .setNegativeButton("Cancel", null).setPositiveButton("Continue") { _, _ -> requestPause(target.key) }.show()
     }
     @Suppress("DEPRECATION")
     private fun requestPause(expectedConnection: String?) {
@@ -308,39 +280,23 @@ class SafetyDemoActivity : AppCompatActivity() {
     }
     private fun isWifiOff() = try { !wifi.isWifiEnabled } catch (_: Exception) { false }
     private fun disarm(reason: String) {
-        val wasArmed = rule.isArmed; rule.disarm(); ruleMessage = reason
+        val wasArmed = isArmed(); rule.disarm(); configRule.disarm(); ruleMessage = reason
         if (wasArmed && ::eventView.isInitialized) event("LIVE", reason)
         if (::ruleStatus.isInitialized) showRuleState()
     }
+    private fun updatePolicyControls() {
+        thresholdChoice.visibility = if (policyChoice.selectedItemPosition == 1) View.VISIBLE else View.GONE
+    }
     private fun showRuleState() {
-        ruleStatus.text = ruleMessage; ruleStatus.setTextColor(if (rule.isArmed) amber else muted)
-        armButton.text = if (rule.isArmed) "Disarm live pause rule" else "Arm live pause rule"
-        thresholdChoice.isEnabled = !rule.isArmed
+        ruleStatus.text = ruleMessage; ruleStatus.setTextColor(if (isArmed()) amber else muted)
+        armButton.text = if (isArmed()) "Disarm live response" else "Arm live response"
+        thresholdChoice.isEnabled = !isArmed()
+        policyChoice.isEnabled = !isArmed()
+        updatePolicyControls()
     }
     private fun event(source: String, message: String) {
         events.addFirst("${DateFormat.getTimeInstance(DateFormat.MEDIUM).format(Date())} | $source | $message")
         while (events.size > 8) events.removeLast()
         eventView.text = events.joinToString("\n\n")
-    }
-    private fun stopSimulation() { simulation?.let { handler.removeCallbacks(it) }; simulation = null }
-    private fun runScenario(scenario: Scenario) {
-        disarm("Disarmed: simulated examples cannot trigger the live pause action."); stopSimulation()
-        trainingChart.submit(emptyList()); event("SIMULATED", "Started invented example: ${scenario.name}.")
-        var count = 0
-        val animation = object : Runnable {
-            override fun run() {
-                if (!foreground) return
-                count++
-                val samples = scenario.values.take(count).mapIndexed { i, value -> ConnectionAnalytics.Sample(i * 2000L, value) }
-                trainingChart.submit(samples)
-                trainingChart.contentDescription = "SIMULATED chart for ${scenario.name}; invented readings"
-                val progress = if (count < scenario.values.size) "Invented readings: $count/${scenario.values.size}. No settings changed."
-                    else "Example complete. No phone settings changed; use the LIVE panel for a real pause demo."
-                trainingResult.text = "SIMULATED - ${scenario.name}\n\nObservation: ${scenario.observation}\n\nMeaning: ${scenario.meaning}\n\nResponse: ${scenario.action}\n\n$progress"
-                if (count < scenario.values.size) handler.postDelayed(this, 1000)
-                else { simulation = null; event("SIMULATED", "Example finished; no real Wi-Fi action performed.") }
-            }
-        }
-        simulation = animation; handler.post(animation)
     }
 }

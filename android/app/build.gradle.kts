@@ -13,8 +13,8 @@ android {
         applicationId = "com.bhadrirajt.wifitrustfusion"
         minSdk = 27
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.1-demo"
+        versionCode = 4
+        versionName = "1.2-demo"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

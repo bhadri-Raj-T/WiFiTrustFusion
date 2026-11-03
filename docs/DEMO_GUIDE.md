@@ -8,29 +8,26 @@
 4. Rehearse normal readings and one real warning. Prepare a screenshot of a warning that you actually observed if the room does not reproduce it reliably.
 5. Keep the APK and checksum available offline. A working GitHub link is helpful, but the live demonstration should not depend on downloading it.
 
-## New Safety screen: teaching scenarios and a real pause
+## Final Demo tab and live-response rehearsal
 
-Open **Safety** in the app header. Its two panels have different purposes:
+The Demo tab contains twenty invented scenarios and never changes the real phone's Wi-Fi. Use **Run selected case** for a short presentation or **Run all 20 scenarios** for the whole suite. The chart, statuses, timings and virtual pause are SIMULATED. Stop/reset and leaving the tab cancel its remaining callbacks. Expand the run summary to review completed fixtures; copy retains the SIMULATED label.
 
-- **SIMULATED:** select one of eight teaching scenarios and tap Play simulated example. Both its chart and security conditions are invented and labelled. No attack runs, no phone setting changes and this panel cannot activate a real pause. Playing an example disarms the live rule.
-- **LIVE:** the first chart reads the phone's actual Wi-Fi. An explicitly armed rule can request Wi-Fi off after three consecutive polls below your threshold. This is a connectivity demonstration, not a validated security rule.
+See [FINAL_DEMO_FLOW.md](FINAL_DEMO_FLOW.md) for the full case matrix and presentation sequence.
 
-For a predictable rehearsal on your own phone:
+For a real signal response on your own phone:
 
-1. Connect to your hotspot, allow network details and keep Safety open until live RSSI appears.
-2. Choose **Below -40 dBm (quick demo)** if the actual signal is already below -40 (for example, -43). This deliberately selects a threshold above the current signal; it does not mean the connection is weak or malicious.
-3. Tap **Arm live pause rule** and read/accept its real-action explanation. Observe 1/3, 2/3 and then the one-shot trigger after approximately six seconds. Android may repeat cached values, so these are consecutive polls, not independent scans.
-4. On Android 8.1/9, inspect whether the phone's Wi-Fi actually turns off. The app first says requested, then confirms only after observing the radio off. A refused/unconfirmed request is shown as such.
-5. On Android 10+, Android's Wi-Fi controls open. Switch Wi-Fi off yourself and return to observe its state. Do not describe this as automatic shutdown on those versions.
-6. Restore Wi-Fi through **Open Wi-Fi controls**. The app never automatically rearms or reconnects the phone.
+1. Connect and verify the actual live RSSI in Analysis.
+2. Open **Demo → Open live Wi-Fi pause controls**.
+3. Select **Low signal (demonstration)**. For a predictable rehearsal, select **Below -40 dBm (quick demo)** only if the actual signal is below -40, such as -43. This deliberately chosen threshold does not mean the network is weak or malicious.
+4. Tap **Arm live response** and accept the real-action explanation. Observe three consecutive live polls and the one-shot response, roughly six seconds under normal scheduling.
+5. On Android 8.1/9, inspect whether the Wi-Fi radio is observed off. On Android 10+, finish switching it off in the opened system controls and return. A request or handoff is not automatically labelled as a successful shutdown.
+6. Restore Wi-Fi through Android's controls. Nothing rearms automatically.
 
-For a movement-based demonstration, choose -55, -65 or -75 dBm and move away until the actual RSSI stays below it for three polls. Rehearse the distance first. If the room does not reproduce that condition, use the quick-demo threshold or the separately confirmed **Pause Wi-Fi on this phone now** button, and explain exactly which trigger was used.
+For a real configuration preference, use a test hotspot you control with an Open configuration, allow network visibility and return promptly from Android Wi-Fi settings so a matching advertisement may be recent. Arm **Open/WEP configuration**. The rule requires current Android security or a matching-AP advertisement aged 0–30 seconds for three foreground polls. If the metadata is missing/stale, it waits and does not disconnect. No active scan was added to force this observation. You can demonstrate that missing-evidence behaviour too. Do not perform sensitive activity on the temporary Open hotspot; restore its normal protection after the demonstration. WEP can remain a labelled fixture; no WEP network needs to be created.
 
-Show one cancellation: arm, then press Back or start a simulated example. The real rule must be disarmed. Rotation, backgrounding, a connection change or a long timing gap also cancels it. No background protection service is implemented.
+Show a cancellation by arming then leaving the live-response screen. Connection changes or timing gaps also disarm it. The simulator cannot invoke the physical response. This affects this phone's Wi-Fi only and does not block mobile data, secure the router or guarantee that personal information is safe.
 
-Turning off this phone's Wi-Fi stops use of that Wi-Fi radio; it does not secure the router, disconnect another device, block mobile data or guarantee that personal information is safe. The app does not inspect packets or identify hackers, evil twins, DNS poisoning or deauthentication attacks. The scenarios teach what such concerns mean and what observations do and do not support.
-
-Check the connected phone's Android version if needed:
+Check the phone OS if needed:
 
 ```bat
 "D:\Android\platform-tools\adb.exe" -s 5203cb41fa4d534d shell getprop ro.build.version.release
@@ -44,7 +41,7 @@ Check the connected phone's Android version if needed:
 | 0:40–1:20 | My Wi-Fi and Android's Wi-Fi chooser | Android manages the password; the report uses the actual connection after returning |
 | 1:20–2:10 | Analysis chart and summary | Latest RSSI, median, range, SD, count and duration are separate descriptive values |
 | 2:10–3:00 | Check internet connection | DNS, TCP and HTTPS use the Wi-Fi route; TCP time is not download speed |
-| 3:00–4:10 | Safety: one labelled simulated example and the live pause | Explain invented versus measured inputs; report the actual shutdown or system-control handoff |
+| 3:00–4:10 | Demo: one labelled simulated example and the separate live response | Explain invented versus measured inputs; report the actual shutdown or system-control handoff |
 | 4:10–5:00 | Explanation file, build summary and GitHub release | Source, actual local test result, APK download and project limits |
 
 Project Tools are an optional extra if time permits: open a development session/history and explain CSV as the reference record and Room as its mirror. Avoid opening collected data or private identifiers on a public screen without checking them first.

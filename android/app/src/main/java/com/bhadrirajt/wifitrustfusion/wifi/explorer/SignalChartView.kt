@@ -11,7 +11,7 @@ import kotlin.math.ceil
 import kotlin.math.floor
 
 /** Small native chart: elapsed time on X, polled RSSI (dBm) on Y. No chart dependency. */
-internal class SignalChartView(context: Context) : View(context) {
+internal class SignalChartView(context: Context, private val waitingLabel: String = "Waiting for live signal readings") : View(context) {
     private val density = resources.displayMetrics.density
     private val pen = Paint(Paint.ANTI_ALIAS_FLAG)
     private var readings = emptyList<ConnectionAnalytics.Sample>()
@@ -50,7 +50,7 @@ internal class SignalChartView(context: Context) : View(context) {
         pen.color = Color.rgb(170, 183, 201)
         canvas.drawText("dBm", 0f, 10f * density, pen)
         if (readings.isEmpty()) {
-            canvas.drawText("Waiting for live signal readings", left + 5f * density, (top + bottom) / 2f, pen)
+            canvas.drawText(waitingLabel, left + 5f * density, (top + bottom) / 2f, pen)
             return
         }
         val start = readings.first().elapsedMs

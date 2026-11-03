@@ -44,9 +44,14 @@ android/app/src/main/java/com/bhadrirajt/wifitrustfusion/ui/ReviewDashboardForma
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/assessment/AssessmentDemo.kt
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/assessment/EvidenceQualityEngine.kt
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/assessment/NetworkIdentityEngine.kt
+android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/CheckReportRenderer.kt
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/ConnectionAnalytics.kt
+android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/ConnectionCheckReport.kt
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/CrowdReports.kt
+android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/FailureLabPanel.kt
+android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/FailureScenarios.kt
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/LivePauseRule.kt
+android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/LiveSecurityPauseRule.kt
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/SafetyDemoActivity.kt
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/SignalChartView.kt
 android/app/src/main/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/WifiConnectionMonitor.kt
@@ -100,7 +105,10 @@ android/app/src/main/res/xml/backup_rules.xml
 android/app/src/main/res/xml/data_extraction_rules.xml
 android/app/src/test/java/com/bhadrirajt/wifitrustfusion/ExampleUnitTest.kt
 android/app/src/test/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/ConnectionAnalyticsTest.kt
+android/app/src/test/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/ConnectionCheckReportTest.kt
+android/app/src/test/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/FailureScenariosTest.kt
 android/app/src/test/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/LivePauseRuleTest.kt
+android/app/src/test/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/LiveSecurityPauseRuleTest.kt
 android/app/src/test/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/WifiConnectionPolicyTest.kt
 android/app/src/test/java/com/bhadrirajt/wifitrustfusion/wifi/explorer/WifiSecurityRulesTest.kt
 android/app/src/test/java/com/bhadrirajt/wifitrustfusion/wifi/freshness/WifiFreshnessEngineTest.kt
@@ -115,5 +123,7 @@ android/gradlew
 android/gradlew.bat
 android/settings.gradle.kts
 docs/DEMO_GUIDE.md
+docs/FINAL_DEMO_FLOW.md
 docs/GITHUB_RELEASE.md
 docs/RELEASE_NOTES_v1.1-demo.md
+docs/RELEASE_NOTES_v1.2-demo.md

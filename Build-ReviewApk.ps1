@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$OriginalProjectRoot = 'D:\Important\Forensics Analytics\WiFiTrustFusion'
+    [string]$OriginalProjectRoot = 'D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview'
 )
 
 Set-StrictMode -Version Latest
@@ -12,8 +12,8 @@ $exportRoot = Join-Path $reviewRoot 'Final_APK'
 $wrapper = Join-Path $androidRoot 'gradlew.bat'
 if (-not (Test-Path -LiteralPath $wrapper -PathType Leaf)) { throw 'Android Gradle wrapper is missing.' }
 $versionFile = Get-Content -LiteralPath (Join-Path $androidRoot 'app/build.gradle.kts') -Raw
-if ($versionFile -notmatch 'versionName\s*=\s*"1\.1-demo"' -or $versionFile -notmatch 'versionCode\s*=\s*3\b') {
-    throw 'This review package expects source version 1.1-demo, code 3. Update the version/release documentation deliberately before changing it.'
+if ($versionFile -notmatch 'versionName\s*=\s*"1\.2-demo"' -or $versionFile -notmatch 'versionCode\s*=\s*4\b') {
+    throw 'This review package expects source version 1.2-demo, code 4. Update the version/release documentation deliberately before changing it.'
 }
 
 New-Item -ItemType Directory -Path $exportRoot -Force | Out-Null
@@ -86,8 +86,8 @@ try {
     $record = [ordered]@{
         formatVersion = 1
         appId = 'com.bhadrirajt.wifitrustfusion'
-        versionName = '1.1-demo'
-        versionCode = 3
+        versionName = '1.2-demo'
+        versionCode = 4
         buildType = 'debug'
         startedUtc = $started.ToString('o')
         completedUtc = $completed.ToString('o')
@@ -103,9 +103,9 @@ try {
         signing = 'Local Gradle debug signing configuration; signing key is not included'
     }
     $summary = @(
-        '# WiFiTrustFusion 1.1-demo - Local Build Summary', '',
+        '# WiFiTrustFusion 1.2-demo - Local Build Summary', '',
         "Completed (UTC): $($completed.ToString('o'))", '',
-        '- Source version: 1.1-demo, code 3.',
+        '- Source version: 1.2-demo, code 4.',
         '- Android build type: debug; classroom prerelease.',
         '- Clean assembly and local JVM unit-test task: completed successfully.',
         "- Unit tests: $tests total; $($tests - $skipped) passed; $skipped skipped; $failures failures; $errors errors.",

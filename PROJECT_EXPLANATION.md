@@ -19,7 +19,7 @@ Our objective is to help a user inspect the actual connected Wi-Fi through a sim
 
 ## Slide 2 — Proposed solution and user workflow
 
-The main interface contains **My Wi-Fi**, **Analysis** and **Reports**, with a **Tools** entry for the earlier development workflow.
+The main interface contains **My Wi-Fi**, **Analysis**, **Demo** and **Reports**, with a **Tools** entry for the earlier development workflow.
 
 1. The user opens My Wi-Fi and analyses the already connected network.
 2. If a change is needed, the app opens Android's Wi-Fi controls. Android collects the password and manages the connection.
@@ -42,7 +42,9 @@ The project has one Android application module, `:app`. It uses native activitie
 | `SignalChartView` | Draws the RSSI history against elapsed time |
 | `WifiSecurityRules` | Formats supported security observations and their source |
 | `WifiDiagnostics` | Runs DNS, TCP and HTTPS checks through the selected Wi-Fi `Network` |
-| `SafetyDemoActivity` and `LivePauseRule` | Labelled training examples and an explicitly armed foreground live-signal pause demonstration |
+| `FailureScenarios` and `FailureLabPanel` | Twenty labelled fixtures, step-by-step reports, virtual response and run summary |
+| `ConnectionCheckReports` and `CheckReportRenderer` | A consistent source-labelled live/simulated report format |
+| `SafetyDemoActivity`, `LivePauseRule`, `LiveSecurityPauseRule` | Explicitly armed foreground live signal/configuration response, separated from simulation |
 | `CrowdReports` | Stores optional local drafts and prepares user-selected sharing |
 | `MainActivity` and collector modules | Earlier development collection and review tools |
 | CSV logger and Room database | Reference CSV development records and an asynchronous database mirror |
@@ -94,31 +96,33 @@ The implementation binds these operations to Android's Wi-Fi `Network`, rather t
 
 The forensic-analytics connection is the care taken with provenance, timestamps, measurement scope and explanations. The retained Project Tools record requested scan sessions, analyse timestamp freshness and mirror CSV records into five Room tables. CSV remains the reference development record because the mirror can be incomplete. Session-local identity/configuration changes and evidence-quality levels are transparent heuristics; they do not prove an attack or provide a legal chain of custody.
 
-### Safety demonstration and real action
+### Demo tab and real response controls
 
-The Safety screen keeps two sources separate. Its eight training examples use invented readings and descriptions for weak/changing signal, open/legacy Wi-Fi, look-alike names, same-name AP changes, captive portals, DNS/HTTPS failure and connection loss. These examples do not detect or generate attacks and cannot trigger the real pause action.
+The dedicated Demo tab offers twenty baseline/failure/edge-case fixtures. It supports run-one/run-all, step progress, an illustrative chart, stop/reset, a completed-case summary and labelled report copying. All inputs are invented. Eligible fixtures demonstrate an automatic pause of a virtual session; this cannot change the real phone's connection. Unknown evidence, legitimate AP changes and cancellation are handled separately rather than becoming attacker verdicts.
 
-The LIVE panel polls the actual phone connection. The user can explicitly arm a one-shot demonstration that requests Wi-Fi off after three consecutive valid polls below a selected RSSI threshold. It cancels on a connection change, invalid timing gap, leaving the screen or starting a simulation. On Android 8.1/9, it requests Wi-Fi shutdown and then observes the radio state; on Android 10+, it opens system controls for the user to finish. Signal is a demonstration trigger, not evidence of a hacker. Turning off this phone's Wi-Fi does not protect the router, block mobile data or guarantee personal-data safety.
+The live-response screen is a separate, explicit user action from the Demo tab. The user can arm a low-signal demonstration or a current/recent Open/WEP configuration preference. Three matching foreground polls are needed. Configuration data must come from Android current security or a matching-AP advertisement no older than 30 seconds. Leaving the screen, a timing gap or a changed connection disarms the rule. Android 8.1/9 can request Wi-Fi off and check the radio; Android 10+ requires the user to finish in system controls. This does not block mobile data or guarantee personal-data safety.
 
 ## Slide 6 — Demonstration and observed output
 
 Start with the normal connected network, keep Analysis open for 20–30 seconds, then show the current value, sample count, chart, median, range and standard deviation. Run the connection checks and explain each outcome separately. The exact preparation and warning demonstrations are in [DEMO_GUIDE.md](docs/DEMO_GUIDE.md).
 
-One previously supplied working-phone screenshot showed **−43 dBm**, **29 readings over 58 seconds**, **median −44 dBm**, **minimum −55 dBm**, **maximum −39 dBm** and **standard deviation 3.2 dB**. Its derived range is 16 dB. This is one demonstration observation, not a benchmark or an accuracy result, and it may differ from tomorrow's live readings.
+One previously supplied working-phone screenshot showed **−43 dBm**, **29 readings over 58 seconds**, **median −44 dBm**, **minimum −55 dBm**, **maximum −39 dBm** and **standard deviation 3.2 dB**. Its derived range is 16 dB. This is one demonstration observation, not a benchmark or an accuracy result, and it may differ from the live presentation's readings.
 
 To demonstrate a warning, move farther from an access point you control and observe whether the real signal crosses the rule threshold. Alternatively, use an authorised test hotspot with its upstream internet disabled to show incomplete internet checks while the phone remains connected to Wi-Fi. Explain the actual observed result; do not promise a particular failure stage.
 
 ## Slide 7 — Validation and current limitations
 
-The earlier phone-fix revision was reported to pass 36 JVM unit tests, and the phone screenshots show working live signal analytics on Samsung SM-J710F. The subsequent branding and Safety-demo revision was prepared without a new build or app execution. Ten additional pure-rule unit-test methods are supplied but have not been executed during preparation. Therefore, that earlier test count must not be presented as a verified result of the latest source.
+The supplied Windows log confirms a successful 1.1-demo build, 46 passing JVM tests, zero skipped, successful APK installation and main/tag pushes. The new 1.2-demo revision has not been compiled, tested or executed during preparation. It adds 23 focused test methods; their presence is not a passing result.
 
-For this review, run `Build-ReviewApk.ps1` locally. It builds the packaged source, checks actual unit-test XML, calculates the exported APK's SHA-256 and writes a public build summary. The publisher verifies that source and APK still match that build record. Included instrumented test sources are not executed by this build script. Complete the manual phone checklist before the presentation.
+Run `Build-ReviewApk.ps1` locally to build, check actual unit-test XML and export the APK/checksum/build summary. Then inspect the phone using `docs/DEMO_GUIDE.md`. Instrumented tests require separate device/emulator execution. Source and APK hashes associate this submission with the local build; they are not a safety certification or a reproducible-build guarantee.
 
-Remaining limits include Android/device differences, permission restrictions, the short observation window, one diagnostic endpoint and limited physical-device evidence. The prototype has no trained ML model, calibrated risk score, validated malicious-hotspot classification, packet inspection, throughput test or deployed cloud-reporting service. Warning messages are foreground UI explanations, not background notifications.
+Limits remain Android/device differences, permission restrictions, a short signal window, a single diagnostic endpoint and limited device testing. The twelve-item live checklist includes passive observations and three active-check types; it is not twelve separate probes or a vulnerability scan. The application does not identify every attack, inspect packets, measure throughput or run a cloud reputation service.
 
 ## Slide 8 — Contribution and conclusion
 
 The completed contribution is an Android interface that combines real connection selection, short-window signal statistics, Wi-Fi-bound diagnostics, explicit explanations and retained development-session tools. The design makes the relationship between an observation and its interpretation visible to the user.
+
+See [the final demo flow](docs/FINAL_DEMO_FLOW.md) for the sequence and source-labelled cases.
 
 Future work would prioritise more devices and Android versions, controlled diagnostic evaluation, clearer privacy/export controls and stronger evidence-integrity handling. Additional security classification would require a separate validated method and dataset.
 

@@ -12,111 +12,86 @@ by **"Bhadri Raj T", "Ajay A", "Vyomika R"**
 
 ## About the project
 
-WiFiTrustFusion is an Android application that helps a user understand the Wi-Fi connection on their phone. It combines a live signal chart, descriptive analytics, available security information and small, user-triggered internet checks in one interface.
+WiFiTrustFusion helps a phone user connect through Android's Wi-Fi controls, analyse the actual connected Wi-Fi and inspect understandable results. Its separate Demo tab explains controlled failures without running attacks or changing the real connection.
 
-A Wi-Fi connection can have strong reception and still require a login or fail to reach the internet. The app explains these conditions separately and associates diagnostic results with the actual Wi-Fi connection. It is a course prototype with transparent rules; it does not classify a hotspot as malicious or certify its owner.
+**Version:** `1.2-demo`, code `4`. Minimum Android: **8.1 / API 27**. Application ID: `com.bhadrirajt.wifitrustfusion`.
 
-**Version:** `1.1-demo` (version code `3`)  
-**Application ID:** `com.bhadrirajt.wifitrustfusion`  
-**Minimum supported OS:** Android 8.1 / API 27
+## Final user workflow
 
-## User workflow
+1. **My Wi-Fi:** use the connected network or select a network through Android. Android handles the password and connection approval.
+2. **Analysis:** run Wi-Fi-bound DNS, TCP and HTTPS checks; inspect progress, cancel if needed and open the formatted checklist.
+3. **Demo:** select a teaching case or run all 20. Review labelled simulated results, an illustrative signal chart and the virtual automatic response.
+4. **Reports:** retain optional local drafts and manually choose whether to share them.
 
-1. Open **My Wi-Fi** and allow the permissions needed to display network details.
-2. Tap **Analyse connected Wi-Fi**, or choose another network and complete the connection through Android's settings.
-3. Return to the app and view the actual connection, signal history and available configuration.
-4. Tap **Check internet connection** to run Wi-Fi-bound DNS, TCP and HTTPS checks.
-5. Read the explanations and compare observations after changing position or connection.
-
-Android handles Wi-Fi passwords and connection approval. The app does not request or store the Wi-Fi password. Location access and the phone's Location setting may be needed for network identity; hidden identity does not by itself block an available Wi-Fi diagnostic route.
+The four navigation tabs remain available while the page scrolls. Live and simulated reports share a readable layout but always retain their source labels.
 
 ## Implemented features
 
-| Area | What the application does |
+| Feature | Behaviour |
 |---|---|
-| Connection interface | Analyses the phone's connected Wi-Fi; opens Android to select or change networks |
-| Signal analytics | Polls RSSI about every two seconds in the foreground; keeps up to 60 valid readings; shows median, minimum, maximum, range and population standard deviation |
-| Signal chart | Uses elapsed time and clears history when the connection changes or a long observation gap occurs |
-| Configuration | Shows available current security type, or a labelled recent matching scan advertisement when supported |
-| Internet diagnostics | Resolves `example.com`, attempts up to three TCP connections to port 443 and performs an HTTPS HEAD check through the Wi-Fi `Network` |
-| Safety demo | Eight clearly labelled simulated scenarios, plus an opt-in foreground live-RSSI pause rule; Wi-Fi off is confirmed from the observed radio state |
-| Explanations | Shows rules for weak or varying signal, open/legacy configuration, captive sign-in and incomplete checks |
-| Optional reports | Keeps local report drafts; the user can choose to share text through Android's share sheet |
-| Project Tools | Retains scan-session collection, timestamp freshness analysis, CSV records, a Room mirror, session history and heuristic evidence assessments |
+| Connected-Wi-Fi analysis | Uses the actual Android Wi-Fi Network; known connection changes invalidate prior probe results |
+| Signal analytics | Foreground polls about every 2 seconds; up to 60 valid readings with median, range and population SD |
+| Live checklist | Twelve items cover route, identity visibility, signal/window, security, portal, Android validation, DNS, TCP, HTTPS, HTTP status and continuity |
+| Active check progress | DNS → TCP → HTTPS, with a cancellation control, timeouts and retry cooldown |
+| Readable results | Labelled status badges, expandable explanations and a copy action that omits Wi-Fi identifiers |
+| Demo tab | Twenty invented baseline/failure/edge-case scenarios, run-one/run-all controls, stop/reset, progress, chart and run summary |
+| Virtual response | Eligible failed fixtures can pause their virtual session; no actual phone settings are changed |
+| Opt-in real response | Explicitly armed foreground Open/WEP configuration or low-signal demonstration rule, using three matching polls |
+| Project Tools | Earlier scan-session tools, reference CSV records, Room mirror, history and heuristic evidence assessments |
 
-The **Safety** button opens the new demonstration screen. Simulated look-alike/AP-change examples are not live attacker detections. The real pause rule requires explicit arming, three consecutive live polls below the chosen threshold, and the same connection. It disarms on a connection change, timing gap, backgrounding or starting a simulation. Android 8.1/9 can request Wi-Fi off; Android 10+ opens system controls for the user to finish. It affects this phone only and does not block mobile data, protect the router or guarantee personal-data safety.
+**Twelve checklist items are not twelve independent network probes.** The active operations remain DNS resolution, up to three TCP connects to port 443 and HTTPS HEAD to `example.com`. HTTP status is read from that same HTTPS response. Other items are passive observations or result-integrity checks.
 
-The main contribution is integrating these observations with clear explanations and connection-aware result handling. No research novelty or measured attack-detection accuracy is claimed.
+## Real pause behaviour
 
-## Technology and source layout
+Open **Demo → Open live Wi-Fi pause controls**. Nothing is armed by default. Choose and explicitly arm one profile:
 
-The implementation is a native Kotlin Android app using Android framework Wi-Fi/connectivity APIs, AppCompat, Material components, Room and KSP. The supplied configuration uses Gradle 9.6.0, Android Gradle Plugin 9.4.1, SDK 36 and a JDK 25 daemon toolchain. Java source/target compatibility is 11.
+- **Open/WEP configuration:** requires Android current connection security or an advertisement matching the connected AP no older than 30 seconds. Unknown/stale observations do not trigger. Three matching foreground polls request a one-shot pause.
+- **Low signal:** a user-selected RSSI demonstration threshold must be crossed for three consecutive valid polls. Signal is not evidence of an attacker.
 
-| Path | Purpose |
+Both profiles disarm on leaving the screen, connection changes or a long timing gap. Android 8.1/9 can accept a Wi-Fi shutdown request; the UI confirms only after observing the radio off. Android 10+ opens Wi-Fi controls for the user to finish. The action affects this phone only, does not block mobile data and does not secure the router or guarantee personal-data protection.
+
+The simulator cannot arm or trigger these real controls. Name similarity, AP changes, failed probes and signal variation are not validated hacker detections. This prototype cannot disconnect automatically for every possible vulnerability.
+
+## Build and install on Windows
+
+Use the existing repository: [bhadri-Raj-T/WiFiTrustFusion](https://github.com/bhadri-Raj-T/WiFiTrustFusion). The update creates a separate `WiFiTrustFusion_FinalReview` worktree from remote main; development/data branches remain separate.
+
+See [docs/GITHUB_RELEASE.md](docs/GITHUB_RELEASE.md) for exact extraction/preparation commands. After preparation, or directly after cloning the updated source, run from the repository root:
+
+```bat
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Build-ReviewApk.ps1 -OriginalProjectRoot "D:\Important\Forensics Analytics\WiFiTrustFusion_MainReview"
+```
+
+The existing SDK 36 setup, JDK 25 daemon toolchain and supplied Gradle 9.6.0 wrapper are retained. Android Gradle Plugin is 9.4.1. The app uses Kotlin, AppCompat/Material and Room/KSP. The script runs clean debug assembly and local JVM tests, verifies actual XML results and exports only after success.
+
+Outputs in `Final_APK`: `WiFiTrustFusion_Final.apk`, its `.sha256`, `BUILD_SUMMARY.md`, `RELEASE_BUILD.json` and `SOURCE_MANIFEST.txt`. This is a locally debug-signed classroom APK. Keep the same local signing key for an in-place update.
+
+## Review documents and source
+
+| File or folder | Purpose |
 |---|---|
-| `android/app/src/main/` | Application source, manifest, layouts and branding |
-| `android/app/src/test/` | Local JVM unit tests |
+| [PROJECT_EXPLANATION.md](PROJECT_EXPLANATION.md) | Eight suggested presentation sections |
+| [docs/FINAL_DEMO_FLOW.md](docs/FINAL_DEMO_FLOW.md) | Final workflow, 20-case matrix and presentation sequence |
+| [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md) | Phone rehearsal and real-response checks |
+| [docs/GITHUB_RELEASE.md](docs/GITHUB_RELEASE.md) | Build, push main and create the new release |
+| [docs/RELEASE_NOTES_v1.2-demo.md](docs/RELEASE_NOTES_v1.2-demo.md) | Current release notes |
+| `android/app/src/main/` | Native application implementation/resources |
+| `android/app/src/test/` | JVM test sources |
 | `android/app/src/androidTest/` | Device/emulator test sources |
-| `android/app/schemas/` | Room schema definition |
-| `android/gradle/` | Wrapper and version/toolchain configuration |
-| [PROJECT_EXPLANATION.md](PROJECT_EXPLANATION.md) | Presentation-aligned explanation for the third review |
-| [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md) | Demonstration sequence and warning conditions |
-| [docs/GITHUB_RELEASE.md](docs/GITHUB_RELEASE.md) | Windows build and GitHub publication steps |
-| [docs/RELEASE_NOTES_v1.1-demo.md](docs/RELEASE_NOTES_v1.1-demo.md) | Release description |
-
-This submission contains the implemented Android application. It does not depend on an online backend, cloud reputation service, trained model or an accompanying dataset.
-
-## Build and install
-
-This update targets the existing repository [bhadri-Raj-T/WiFiTrustFusion](https://github.com/bhadri-Raj-T/WiFiTrustFusion), using a separate review worktree based on `origin/main`. `dev-core` and `data-acquisition` are not merged or pushed by the supplied workflow. See [the existing-repository instructions](docs/GITHUB_RELEASE.md).
-
-Use the Windows laptop on which the project already builds. Prepare the update with `Prepare-MainReview.ps1`; it creates the separate `WiFiTrustFusion_MainReview` worktree. Keep the Gradle wrapper and toolchain configuration supplied with the source.
-
-If you cloned this repository after the update, the source is already applied: run the build command directly from the repository root. The preparation helper is only needed when applying the downloaded update to the earlier checkout.
-
-From Command Prompt in that folder:
-
-```bat
-powershell -NoProfile -ExecutionPolicy Bypass -File .\Build-ReviewApk.ps1 -OriginalProjectRoot "D:\Important\Forensics Analytics\WiFiTrustFusion"
-```
-
-The script can copy the existing, ignored `android/local.properties` and the original `LICENSE`, if present, from that local project. It builds the review source, runs local unit tests, verifies the test XML and exports only after success. It does not modify the original application's source or install the app automatically.
-
-Outputs appear in `Final_APK`:
-
-- `WiFiTrustFusion_Final.apk` — the locally signed debug APK for the classroom demo.
-- `WiFiTrustFusion_Final.sha256` — SHA-256 of those exact APK bytes.
-- `BUILD_SUMMARY.md` — actual local build and unit-test counts.
-- `RELEASE_BUILD.json` and `SOURCE_MANIFEST.txt` — build/source association used by the publisher.
-
-Install on a connected compatible phone:
-
-```bat
-"D:\Android\platform-tools\adb.exe" devices -l
-"D:\Android\platform-tools\adb.exe" -s 5203cb41fa4d534d install -r ".\Final_APK\WiFiTrustFusion_Final.apk"
-"D:\Android\platform-tools\adb.exe" -s 5203cb41fa4d534d shell am start -n com.bhadrirajt.wifitrustfusion/.wifi.explorer.WifiExplorerActivity
-```
-
-Replace the serial for another phone. Alternatively, transfer the APK to an Android 8.1+ phone and open it with that phone's installation permission. Compatibility still depends on the device and its policy. An existing installation must use a matching signing certificate for an in-place update; retain any important local records before resolving a mismatch.
+| `android/app/schemas/` | Room schema |
 
 ## Validation status
 
-The preceding working phone-fix revision was reported to pass **36 local JVM tests**, and live signal analytics were demonstrated on a Samsung SM-J710F. This is historical evidence, not a new test run of this package. The final branding and new Safety-demo source have not been compiled or executed during preparation of this submission. Ten new pure-rule unit tests are supplied for one-shot triggering, invalid readings, timing, disarming and connection changes; their presence is not a passing result.
+The student's supplied Windows log confirms that **1.1-demo passed 46 JVM tests with zero skipped**, installed successfully on the connected phone, and was pushed to main at `986c741a12baadd50eb1c8a237cd2b05bbda097b` with tag `v1.1-demo`.
 
-`Build-ReviewApk.ps1` records a fresh result on the student's Windows laptop. The release helper requires that successful build record, checks the APK checksum and checks that the listed source files have not changed since the build. Device/emulator tests are included as source but are not run by that script. Manual phone verification is still required before presenting.
+This new **1.2-demo** revision was prepared without compiling or executing the app. It adds 23 focused test methods for fixture source labels, dependent-check skipping, discarded results, report interpretation and configuration-response guards. These new tests have not been run during preparation. Run the local build script to obtain the actual result, then perform the manual phone checklist. Instrumented test sources are included but not executed by that script.
 
-## Scope and limitations
+## Evidence and scope
 
-- RSSI polls can repeat Android's cached radio values; they are not independent active scans.
-- TCP connection time is not ICMP ping, download speed or a throughput measurement.
-- A strong signal or WPA2/WPA3 label does not establish hotspot legitimacy.
-- A failed check can result from a portal, filtering, timeout, DNS issue or the test endpoint; it is not proof of an attack.
-- Reports are local drafts, not a deployed crowdsourced reputation service.
-- In Project Tools, CSV is the reference development record and Room is a mirror that can be incomplete. The prototype does not establish a forensic chain of custody.
-- Warning messages are displayed in the foreground; background alerts, calibrated risk scores and validated malicious-hotspot detection are outside this version.
+RSSI may repeat cached values, TCP time is not download speed, and successful HTTPS authenticates the endpoint under the phone's TLS policy rather than the hotspot operator. Modern Wi-Fi configuration does not certify an owner. Unknown and untested items are never labelled as passes.
 
-## Third-review submission
+Simulated data does not enter collector CSVs, the Room mirror or live probe results. Optional reports are local drafts; no cloud reputation service or backend is deployed. CSV is the reference development record and the Room mirror can be incomplete; the prototype does not establish a forensic chain of custody. No trained model, calibrated attack score, packet inspection, background protection service or validated malicious-hotspot detection is claimed.
 
-Use `README.md` for the overview and `PROJECT_EXPLANATION.md` alongside the presentation. Use `Publish-Main.ps1` after the successful local build and manual phone check to commit/push this review to the existing repository's `main` and tag `v1.1-demo`. Create the release in GitHub's existing repository and attach the APK/checksum as **release assets**, rather than committing the APK to source control. The explicit update file list excludes new local evidence, collected data, keys, caches and build outputs. Existing repository history and previously committed documents remain intact; ignore rules do not remove already tracked files.
+Publish this revision to the existing main using `Publish-Main.ps1` after the local build and phone checks. Create a **new `v1.2-demo` prerelease** and attach the new APK/checksum/build records. Keep the existing `v1.1-demo` release/tag intact. No GitHub plugin or CLI is needed; Git pushes code/tags and the website accepts release assets.
 
-No paper or unpublished manuscript is included. If the project becomes part of a paper before publication, follow the professor's instruction to keep the repository local until the paper has been submitted for publication.
+No paper or unpublished manuscript is included. If this project becomes part of a paper, follow the professor's instruction to keep it local until the paper is submitted for publication. Existing repository history remains intact; ignore rules do not remove previously tracked files.

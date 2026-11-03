@@ -49,18 +49,17 @@ class ConsumerConnectionFlowTest {
         }
     }
 
-    @Test fun sampleChartIsExplicitlyLabelledAndDoesNotOfferActiveChecks() {
+    @Test fun dedicatedDemoTabLabelsFixturesAndSeparatesRealControls() {
         ActivityScenario.launch(WifiExplorerActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 val root = activity.findViewById<View>(android.R.id.content)
-                descendants(root).filterIsInstance<Button>().first {
-                    it.text.toString() == "Preview with labelled sample data"
-                }.performClick()
-                descendants(root).filterIsInstance<Button>().first { it.text.toString() == "Analysis" }.performClick()
-                val views = descendants(root)
-                val text = views.filterIsInstance<TextView>().joinToString("\n") { it.text }
-                assertTrue(text.contains("SAMPLE DATA · NOT A LIVE CONNECTION"))
-                assertFalse(views.filterIsInstance<Button>().any { it.text.toString() == "Check internet connection" })
+                descendants(root).filterIsInstance<Button>().first { it.text.toString() == "Demo" }.performClick()
+                val text = descendants(root).filterIsInstance<TextView>().joinToString("\n") { it.text }
+                assertTrue(text.contains("SIMULATED"))
+                assertTrue(text.contains("20 scenarios"))
+                assertTrue(text.contains("real Wi-Fi stays unchanged"))
+                assertTrue(descendants(root).filterIsInstance<Button>().any { it.text.toString() == "Run all 20 scenarios" })
+                assertFalse(descendants(root).filterIsInstance<Button>().any { it.text.toString() == "Pause Wi-Fi on this phone now" })
             }
         }
     }

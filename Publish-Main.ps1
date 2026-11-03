@@ -5,14 +5,14 @@ $ErrorActionPreference = 'Stop'
 $reviewRoot = $PSScriptRoot
 . (Join-Path $reviewRoot 'Release-Common.ps1')
 $repository = 'bhadri-Raj-T/WiFiTrustFusion'
-$tag = 'v1.1-demo'
+$tag = 'v1.2-demo'
 $out = Join-Path $reviewRoot 'Final_APK'
 $recordFile = Join-Path $out 'RELEASE_BUILD.json'
 if (-not (Test-Path -LiteralPath $recordFile -PathType Leaf)) { throw 'Run Build-ReviewApk.ps1 successfully in this review worktree first.' }
 $record = Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json
-if ($record.formatVersion -ne 1 -or $record.appId -ne 'com.bhadrirajt.wifitrustfusion' -or $record.versionName -ne '1.1-demo' -or $record.versionCode -ne 3 -or $record.buildType -ne 'debug' -or
+if ($record.formatVersion -ne 1 -or $record.appId -ne 'com.bhadrirajt.wifitrustfusion' -or $record.versionName -ne '1.2-demo' -or $record.versionCode -ne 4 -or $record.buildType -ne 'debug' -or
     $record.unitTests.passed -lt 1 -or $record.unitTests.failures -ne 0 -or $record.unitTests.errors -ne 0) {
-    throw 'A successful 1.1-demo build and unit-test result is required.'
+    throw 'A successful 1.2-demo build and unit-test result is required.'
 }
 $apk = Join-Path $out 'WiFiTrustFusion_Final.apk'
 $shaFile = Join-Path $out 'WiFiTrustFusion_Final.sha256'
@@ -58,22 +58,22 @@ try {
     & git diff --cached --quiet
     $diffExit = $LASTEXITCODE
     if ($diffExit -eq 1) {
-        Invoke-ReviewTool -Executable git -CommandArgs @('commit','-m','Third review: connected Wi-Fi analytics, safety demonstrations and project documentation')
+        Invoke-ReviewTool -Executable git -CommandArgs @('commit','-m','Third review: final UI, live check reports and twenty failure scenarios')
     } elseif ($diffExit -ne 0) { throw 'Could not inspect staged changes.' }
     if ((Get-ReviewSourceStamp -Root $reviewRoot).Hash -ne $record.sourceFingerprintSha256) { throw 'Public files changed during commit. Rebuild before pushing.' }
     $head = (Invoke-ReviewTool -Executable git -CommandArgs @('rev-parse','HEAD') | Out-String).Trim()
     $localTags = @(Invoke-ReviewTool -Executable git -CommandArgs @('tag','--list',$tag))
     if ($localTags -contains $tag) {
         $existing = (Invoke-ReviewTool -Executable git -CommandArgs @('rev-parse',"$tag^{commit}") | Out-String).Trim()
-        if ($existing -ne $head) { throw 'Local v1.1-demo points elsewhere; it was not moved.' }
+        if ($existing -ne $head) { throw 'Local v1.2-demo points elsewhere; it was not moved.' }
     } else {
-        Invoke-ReviewTool -Executable git -CommandArgs @('tag','-a',$tag,'-m','WiFiTrustFusion 1.1-demo - Third Review',$head)
+        Invoke-ReviewTool -Executable git -CommandArgs @('tag','-a',$tag,'-m','WiFiTrustFusion 1.2-demo - Third Review',$head)
     }
     $remoteTags = @(Invoke-ReviewTool -Executable git -CommandArgs @('ls-remote','--tags','origin',"refs/tags/$tag", "refs/tags/$tag^{}"))
     if ($remoteTags.Count -gt 0) {
         $peeled = @($remoteTags | Where-Object { $_ -match '\^\{\}$' })
         $row = if ($peeled.Count -gt 0) { $peeled[0] } else { $remoteTags[0] }
-        if (($row -split '\s+')[0] -ne $head) { throw 'Remote v1.1-demo points elsewhere; it was not moved. Use a new version for different code.' }
+        if (($row -split '\s+')[0] -ne $head) { throw 'Remote v1.2-demo points elsewhere; it was not moved. Use a new version for different code.' }
     }
     # Explicit destination updates main only. Development/data branches are untouched.
     Invoke-ReviewTool -Executable git -CommandArgs @('push','origin','HEAD:refs/heads/main')

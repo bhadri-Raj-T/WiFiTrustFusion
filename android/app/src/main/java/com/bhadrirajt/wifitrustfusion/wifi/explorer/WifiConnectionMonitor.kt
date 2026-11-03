@@ -24,7 +24,9 @@ internal class WifiConnectionMonitor(context: Context) {
         val securitySource: String = "No current security information",
         val validated: Boolean = false,
         val captivePortal: Boolean = false,
-        val status: String = "Not connected to Wi-Fi"
+        val status: String = "Not connected to Wi-Fi",
+        val securityFromCurrentConnection: Boolean = false,
+        val securityAgeSeconds: Long? = null
     ) {
         val connected: Boolean get() = network != null
         val routeKey: String? get() = network?.let { "wifi:${it.networkHandle}" }
@@ -111,6 +113,8 @@ internal class WifiConnectionMonitor(context: Context) {
         val frequency = compatible.firstNotNullOfOrNull { it.frequency.takeIf { value -> value > 0 } }
         val speed = compatible.firstNotNullOfOrNull { it.linkSpeed.takeIf { value -> value > 0 } }
         var security = "Unavailable"
+        var currentSecurity = false
+        var securityAgeSeconds: Long? = null
         var source = "Security information is unavailable for this connection"
         if (Build.VERSION.SDK_INT >= 31 && info != null) {
             security = when (info.currentSecurityType) {
@@ -128,7 +132,7 @@ internal class WifiConnectionMonitor(context: Context) {
                 WifiInfo.SECURITY_TYPE_PASSPOINT_R3 -> "Passpoint"
                 else -> "Unavailable"
             }
-            if (security != "Unavailable") source = "Current connection reported by Android"
+            if (security != "Unavailable") { source = "Current connection reported by Android"; currentSecurity = true }
         }
         if (security == "Unavailable" && bssid != null) {
             val scan = try { wifi.scanResults.firstOrNull { it.BSSID.equals(bssid, true) } }
@@ -136,12 +140,14 @@ internal class WifiConnectionMonitor(context: Context) {
             val ageMicros = scan?.let { SystemClock.elapsedRealtimeNanos() / 1000 - it.timestamp }
             if (scan != null && scan.timestamp > 0 && ageMicros != null && ageMicros in 0..120_000_000L) {
                 security = WifiSecurityRules.classify(scan.capabilities.orEmpty()).label
+                securityAgeSeconds = (ageMicros + 999_999L) / 1_000_000
                 source = "Advertisement from this AP, ${ageMicros / 1_000_000}s ago; negotiated security unavailable"
             }
         }
         return Snapshot(network, ssid, bssid, rssi, frequency, speed, security, source,
             caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),
             caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL),
-            if (ssid == null) "Wi-Fi connected; Android has not provided its name. Internet checks are available." else "Connected to $ssid")
+            if (ssid == null) "Wi-Fi connected; Android has not provided its name. Internet checks are available." else "Connected to $ssid",
+            securityFromCurrentConnection = currentSecurity, securityAgeSeconds = securityAgeSeconds)
     }
 }
